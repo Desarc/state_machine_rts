@@ -18,8 +18,7 @@ end
 
 function Timer:new(expires, state_machine, event)
 	o = {}
-	setmetatable(o, self)
-	self.__index = self
+	setmetatable(o, { __index = self })
 	local id = state_machine .. tostring(os.clock())
 	o.data = {id = id, expires = expires, state_machine = state_machine, event = event}
 	return o

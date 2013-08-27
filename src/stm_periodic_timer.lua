@@ -19,7 +19,7 @@ end
 
 local function timer_stop(id, scheduler)
 	print("Stopping timer...")
-	scheduler.stop_timer(id)
+	scheduler:stop_timer(id)
 end
 
 local function cars_show_green()
@@ -35,31 +35,32 @@ PeriodicTimer.events = {
 	EXIT = 4,
 }
 
-function PeriodicTimer:new(id)
-	o = o or {}
-	setmetatable(o, self)
-	self.__index = self
-	o.data = {id = id, current_state = IDLE}
+function PeriodicTimer:new(id, scheduler)
+	o = {}
+	setmetatable(o, { __index = self })
+	o.data = {}
+	o.data.id = id
+	o.data.current_state = IDLE
+	o.scheduler = scheduler
+	scheduler:add_state_machine(o)
 	return o
 end
 
-function PeriodicTimer:id()
-	return self.data.id
-end
-
-function PeriodicTimer:fire(event, scheduler)
-	
+function PeriodicTimer:fire()
 	while(true) do
-		print("Event received!")
-		print(self.data.current_state)
-		print(event:type())
-		if self.data.current_state == IDLE then
+		print("Handling event in PeriodicTimer...")
+		event = self.scheduler:get_active_event()
+
+		if event:type() == self.TERMINATE_SELF then
+			break
+
+		elseif self.data.current_state == IDLE then
 			if event:type() == self.events.START then
 				timer_start()
 				local event = Event:new(self.data.id, self.events.TIMEOUT)
 				local timer = Timer:new(os.time()+TIMEOUT_TIME, self.data.id, event)
 				self.data.current_timer_id = timer:id()
-				scheduler.add_timer(timer)
+				self.scheduler:add_timer(timer)
 				self.data.current_state = ACTIVE
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -73,7 +74,7 @@ function PeriodicTimer:fire(event, scheduler)
 			if event:type() == self.events.TIMEOUT then
 				tick()
 				local event = Event:new(self.data.id, self.events.TIMEOUT)
-				scheduler.add_timer(Timer:new(os.time()+TIMEOUT_TIME, self.data.id, event))
+				self.scheduler:add_timer(Timer:new(os.time()+TIMEOUT_TIME, self.data.id, event))
 				self.data.current_state = ACTIVE
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -89,9 +90,9 @@ function PeriodicTimer:fire(event, scheduler)
 
 			end
 
+		else
+			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end
-
-		coroutine.yield(StateMachine.DISCARD_EVENT)
 	end
 
 end

@@ -1,23 +1,31 @@
-LUA_PATH = "src/?;src/?.lua"
+LUA_PATH = "src/?;src/?.lua;lib/?;lib/?.lua;lib/?.so"
 
 require "scheduler"
 require "event"
+require "luaproc"
 require "stm_traffic_light"
 require "stm_periodic_timer"
 
 local function main()
 
-	stm_tlc001 = TrafficLightController:new("stm_tlc001")
+	local scheduler = Scheduler:new()
 
-	stm_pl001 = PeriodicTimer:new("stm_pl001")
+	stm_tlc001 = TrafficLightController:new("stm_tlc001", scheduler)
 
-	Scheduler.add_state_machine(stm_tlc001)
-	Scheduler.add_state_machine(stm_pl001)
+	stm_pl001 = PeriodicTimer:new("stm_pl001", scheduler)
 
-	event = Event:new(stm_pl001:id(), 1)
+	event = Event:new(stm_tlc001:id(), 1)
 
-	Scheduler.add_to_queue(event)
-	Scheduler:run()
+	luaproc.createworker()
+
+	--luaproc.newproc ( [==[
+	--		scheduler:run()
+	--	]==])
+
+	scheduler:add_to_queue(event)
+	scheduler:run()
+	
+	
 
 end
 

@@ -10,8 +10,7 @@ end
 
 function Event:new(state_machine, type)
 	o = {}
-	setmetatable(o, self)
-	self.__index = self
+	setmetatable(o, { __index = self })
 	o.data = {state_machine = state_machine, type = type}
 	return o
 end

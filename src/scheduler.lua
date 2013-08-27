@@ -1,76 +1,97 @@
--- list of state machines
-local state_machine_list = {}
+Scheduler = {}
 
-local function add_state_machine(state_machine)
-	state_machine_list[state_machine:id()] = coroutine.create(state_machine.fire)
+function Scheduler:add_state_machine(state_machine)
+	state_machine.run = coroutine.create(state_machine.fire)
+	self.state_machine_list[state_machine:id()] = state_machine
 end
 
-local function remove_state_machine(state_machine)
-	state_machine_list[state_machine:id()] = nil
+function Scheduler:remove_state_machine(state_machine)
+	if self.state_machine_list[state_machine:id()] then
+		result = true
+	end
+	self.state_machine_list[state_machine:id()] = nil
+	return result
 end
 
--- event queue
-local event_queue = {}
-
-local function add_to_queue(event)
-	table.insert(event_queue, event)
+function Scheduler:add_to_queue(event)
+	table.insert(self.event_queue, event)
 end
 
-local function get_next_event()
-	return table.remove(event_queue, 1)
+function Scheduler:get_next_event()
+	return table.remove(self.event_queue, 1)
 end
-
-local timers = {}
 
 local function timers_cmp(t1, t2)
 	if t1:expires() < t2:expires() then return true end
 end
 
 -- add timer to list based on expiry time
-local function add_timer(timer)
+function Scheduler:add_timer(timer)
 	if timer:expires() then
-		table.insert(timers, timer)
-		table.sort(timers, timers_cmp)
+		table.insert(self.timers, timer)
+		table.sort(self.timers, timers_cmp)
 	end
 end
 
-local function stop_timer(id)
-	for k, v in timers do
+function Scheduler:stop_timer(id)
+	for k, v in self.timers do
 		if v:id() == id then
-			table.remove(timers, k)
+			table.remove(self.timers, k)
 			break
 		end
 	end
 end
 
-local function check_timers()
+function Scheduler:check_timers()
 	local now = os.time()
-	if timers[1] then
-		if timers[1]:expires() < now then return table.remove(timers, 1) end
+	if self.timers[1] then
+		if self.timers[1]:expires() < now then return table.remove(self.timers, 1) end
 	end
 end
 
-Scheduler = {
-	add_state_machine = add_state_machine,
-	remove_state_machine = remove_state_machine,
-	add_to_queue = add_to_queue,
-	add_timer = add_timer,
-}
+function Scheduler:set_active_event(event)
+	self.active_event = event
+end
+
+function Scheduler:get_active_event()
+	return self.active_event
+end
 
 function Scheduler:run()
+	print("Scheduler running.")
 	while(true) do
-		timer = check_timers()
+		timer = self:check_timers()
 		if timer then
-			coroutine.resume(state_machine_list[timer:state_machine()], timer:event(), self)
-			--state_machine_list[timer:state_machine()]:fire(timer:event(), self)
+			print("Timer expired!")
+			state_machine = self.state_machine_list[timer:state_machine()]
+			self:set_active_event(timer:event())
+			success, status = coroutine.resume(state_machine.run, state_machine)
+			if not success then
+				remove_state_machine(state_machine)
+			end
 		end
-		event = get_next_event()
+		event = self:get_next_event()
 		if event then
-			print("Processing event...")
-			coroutine.resume(state_machine_list[event:state_machine()], event, self)
-			--state_machine_list[event:state_machine()]:fire(event, self)
+			print("Event received!")
+			state_machine = self.state_machine_list[event:state_machine()]
+			self:set_active_event(event)
+			success, status = coroutine.resume(state_machine.run, state_machine)
+			if not success then
+				remove_state_machine(state_machine)
+			end
 		end
 	end
 end
+
+
+function Scheduler:new()
+	o = {}
+	setmetatable(o, { __index = self })
+	o.state_machine_list = {}
+	o.event_queue = {}
+	o.timers = {}
+	return o
+end
+
 
 return Scheduler
