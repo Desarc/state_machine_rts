@@ -1,3 +1,5 @@
+require "luaproc"
+
 Scheduler = {}
 
 function Scheduler:add_state_machine(state_machine)
@@ -60,6 +62,7 @@ end
 function Scheduler:run()
 	print("Scheduler running.")
 	while(true) do
+		
 		timer = self:check_timers()
 		if timer then
 			print("Timer expired!")
@@ -84,12 +87,13 @@ function Scheduler:run()
 end
 
 
-function Scheduler:new()
+function Scheduler:new(channel_name)
 	o = {}
 	setmetatable(o, { __index = self })
 	o.state_machine_list = {}
 	o.event_queue = {}
 	o.timers = {}
+	o.channel_name = channel_name
 	return o
 end
 
