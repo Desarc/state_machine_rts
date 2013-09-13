@@ -4,8 +4,8 @@ function Timer:expires()
 	return self.data.expires
 end
 
-function Timer:state_machine()
-	return self.data.state_machine
+function Timer:state_machine_id()
+	return self.data.state_machine_id
 end
 
 function Timer:event()
@@ -16,11 +16,11 @@ function Timer:id()
 	return self.data.id
 end
 
-function Timer:new(expires, state_machine, event)
+function Timer:new(expires, state_machine_id, event)
 	o = {}
 	setmetatable(o, { __index = self })
-	local id = state_machine .. tostring(os.clock())
-	o.data = {id = id, expires = expires, state_machine = state_machine, event = event}
+	local id = state_machine_id .. tostring(os.clock())
+	o.data = {id = id, expires = expires, state_machine_id = state_machine_id, event = event}
 	return o
 end
 

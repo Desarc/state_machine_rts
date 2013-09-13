@@ -22,10 +22,6 @@ local function timer_stop(id, scheduler)
 	scheduler:stop_timer(id)
 end
 
-local function cars_show_green()
-	print("Car light set to green.")
-end
-
 PeriodicTimer = StateMachine:new()
 
 PeriodicTimer.events = {
@@ -49,7 +45,7 @@ end
 function PeriodicTimer:fire()
 	while(true) do
 		print("Handling event in PeriodicTimer...")
-		event = self.scheduler:get_active_event()
+		local event = self.scheduler:get_active_event()
 
 		if event:type() == self.TERMINATE_SELF then
 			break
@@ -85,7 +81,6 @@ function PeriodicTimer:fire()
 
 			elseif event:type() == self.events.EXIT then
 				stm_exit()
-				self.data.current_state = IDLE
 				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
 
 			end

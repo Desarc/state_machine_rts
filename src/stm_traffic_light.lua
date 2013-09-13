@@ -8,22 +8,37 @@ local PEDESTRIAN_TIME = 10
 local SAFE_TIME = 1
 
 local function peds_show_red()
+
+	-- change some registry or variable values...
+
 	print("Pedestrian light set to red.")
 end
 
 local function peds_show_green()
+
+	-- change some registry or variable values...
+
 	print("Pedestrian light set to green.")
 end
 
 local function cars_show_red()
+
+	-- change some registry or variable values...
+
 	print("Car light set to red.")
 end
 
 local function cars_show_yellow()
+
+	-- change some registry or variable values...
+
 	print("Car light set to yellow.")
 end
 
 local function cars_show_green()
+
+	-- change some registry or variable values...
+
 	print("Car light set to green.")
 end
 
@@ -35,7 +50,6 @@ TrafficLightController.events = {
 	PEDESTRIANS_GO = 3,
 	PEDESTRIAN_TIMER_EXPIRED = 4,
 	CARS_GO = 5,
-	TERMINATE = 6,
 }
 
 function TrafficLightController:new(id, scheduler)

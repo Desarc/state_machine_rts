@@ -3,13 +3,18 @@ require "luaproc"
 Scheduler = {}
 
 function Scheduler:add_state_machine(state_machine)
+	-- create a coroutine to resume when calling <state_machine>.run()
+	-- the coroutine should call the <state_machine>:fire() function when resumed 
 	state_machine.run = coroutine.create(state_machine.fire)
+	-- index by ID (must be unique)
 	self.state_machine_list[state_machine:id()] = state_machine
+	print("State machine '"..state_machine:id().."' added to scheduler.")
 end
 
 function Scheduler:remove_state_machine(state_machine)
 	if self.state_machine_list[state_machine:id()] then
-		result = true
+		result = true -- return true if state machine existed
+		print("State machine '"..state_machine:id().."' removed from scheduler.")
 	end
 	self.state_machine_list[state_machine:id()] = nil
 	return result
@@ -44,6 +49,7 @@ function Scheduler:stop_timer(id)
 	end
 end
 
+-- TODO: better precision on timer check
 function Scheduler:check_timers()
 	local now = os.time()
 	if self.timers[1] then
@@ -56,44 +62,51 @@ function Scheduler:set_active_event(event)
 end
 
 function Scheduler:get_active_event()
-	return self.active_event
+	local event = self.active_event
+	self.active_event = nil
+	return event
 end
 
 function Scheduler:run()
 	print("Scheduler running.")
+
+	-- TODO: passive waiting if no events/timers?
+	local success, status, state_machine
 	while(true) do
 		
-		timer = self:check_timers()
+		local timer = self:check_timers()
 		if timer then
 			print("Timer expired!")
-			state_machine = self.state_machine_list[timer:state_machine()]
+			state_machine = self.state_machine_list[timer:state_machine_id()]
 			self:set_active_event(timer:event())
 			success, status = coroutine.resume(state_machine.run, state_machine)
 			if not success then
-				remove_state_machine(state_machine)
+				print("Success: "..tostring(success)..", status: "..status)
+				self:remove_state_machine(state_machine)
 			end
 		end
-		event = self:get_next_event()
+
+		local event = self:get_next_event()
 		if event then
 			print("Event received!")
-			state_machine = self.state_machine_list[event:state_machine()]
+			state_machine = self.state_machine_list[event:state_machine_id()]
 			self:set_active_event(event)
 			success, status = coroutine.resume(state_machine.run, state_machine)
 			if not success then
-				remove_state_machine(state_machine)
+				print("Success: "..tostring(success)..", status: "..status)
+				self:remove_state_machine(state_machine)
 			end
 		end
 	end
 end
 
 
-function Scheduler:new(channel_name)
+function Scheduler:new()
 	o = {}
 	setmetatable(o, { __index = self })
 	o.state_machine_list = {}
 	o.event_queue = {}
 	o.timers = {}
-	o.channel_name = channel_name
 	return o
 end
 
