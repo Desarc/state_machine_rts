@@ -19,8 +19,9 @@ end
 function Timer:new(expires, state_machine_id, event)
 	o = {}
 	setmetatable(o, { __index = self })
-	local id = state_machine_id .. tostring(os.clock())
+	local id = state_machine_id .. expires
 	o.data = {id = id, expires = expires, state_machine_id = state_machine_id, event = event}
+	print("Timer " .. id .. " expires at " .. expires)
 	return o
 end
 

@@ -1,9 +1,14 @@
-require "state_machine"
-require "timer"
-require "event"
+--require "state_machine"
+--require "timer"
+--require "event"
+
+StateMachine = dofile("/wo/state_machine.lua")
+Timer = dofile("/wo/timer.lua")
+Event = dofile("/wo/event.lua")
+
 
 local ACTIVE, IDLE = "Active", "Idle"
-local TIMEOUT_TIME = 5
+local TIMEOUT_TIME = 5000000
 
 local function timer_start()
 	print("Timer started.")
@@ -54,7 +59,7 @@ function PeriodicTimer:fire()
 			if event:type() == self.events.START then
 				timer_start()
 				local event = Event:new(self.data.id, self.events.TIMEOUT)
-				local timer = Timer:new(os.time()+TIMEOUT_TIME, self.data.id, event)
+				local timer = Timer:new(self.scheduler.time()+TIMEOUT_TIME, self.data.id, event)
 				self.data.current_timer_id = timer:id()
 				self.scheduler:add_timer(timer)
 				self.data.current_state = ACTIVE
@@ -70,7 +75,7 @@ function PeriodicTimer:fire()
 			if event:type() == self.events.TIMEOUT then
 				tick()
 				local event = Event:new(self.data.id, self.events.TIMEOUT)
-				self.scheduler:add_timer(Timer:new(os.time()+TIMEOUT_TIME, self.data.id, event))
+				self.scheduler:add_timer(Timer:new(self.scheduler.time()+TIMEOUT_TIME, self.data.id, event))
 				self.data.current_state = ACTIVE
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 

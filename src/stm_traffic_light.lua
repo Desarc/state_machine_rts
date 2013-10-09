@@ -1,11 +1,15 @@
-require "state_machine"
-require "timer"
-require "event"
+--require "state_machine"
+--require "timer"
+--require "event"
+
+StateMachine = dofile("/wo/state_machine.lua")
+Timer = dofile("/wo/timer.lua")
+Event = dofile("/wo/event.lua")
 
 local S0, S1, S2, S3, S4, S5 = "S0", "S1", "S2", "S3", "S4", "S5"
-local YELLOW_DELAY = 3
-local PEDESTRIAN_TIME = 10
-local SAFE_TIME = 1
+local YELLOW_DELAY = 3000000
+local PEDESTRIAN_TIME = 10000000
+local SAFE_TIME = 1000000
 
 local function peds_show_red()
 
@@ -74,7 +78,7 @@ function TrafficLightController:fire()
 			if event:type() == self.events.PEDESTRIAN_BUTTON_PRESSED then
 				cars_show_yellow()
 				local event = Event:new(self.data.id, self.events.YELLOW_TIMER_EXPIRED)
-				self.scheduler:add_timer(Timer:new(os.time()+YELLOW_DELAY, self.data.id, event))
+				self.scheduler:add_timer(Timer:new(self.scheduler.time()+YELLOW_DELAY, self.data.id, event))
 				self.data.current_state = S1
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			end
@@ -83,7 +87,7 @@ function TrafficLightController:fire()
 			if event:type() == self.events.YELLOW_TIMER_EXPIRED then
 				cars_show_red()
 				local event = Event:new(self.data.id, self.events.PEDESTRIANS_GO)
-				self.scheduler:add_timer(Timer:new(os.time()+SAFE_TIME, self.data.id, event))
+				self.scheduler:add_timer(Timer:new(self.scheduler.time()+SAFE_TIME, self.data.id, event))
 				self.data.current_state = S2
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			end
@@ -92,7 +96,7 @@ function TrafficLightController:fire()
 			if event:type() == self.events.PEDESTRIANS_GO then
 				peds_show_green()
 				local event = Event:new(self.data.id, self.events.PEDESTRIAN_TIMER_EXPIRED)
-				self.scheduler:add_timer(Timer:new(os.time()+PEDESTRIAN_TIME, self.data.id, event))
+				self.scheduler:add_timer(Timer:new(self.scheduler.time()+PEDESTRIAN_TIME, self.data.id, event))
 				self.data.current_state = S3
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			end
@@ -101,7 +105,7 @@ function TrafficLightController:fire()
 			if event:type() == self.events.PEDESTRIAN_TIMER_EXPIRED then
 				peds_show_red()
 				local event = Event:new(self.data.id, self.events.CARS_GO)
-				self.scheduler:add_timer(Timer:new(os.time()+SAFE_TIME, self.data.id, event))
+				self.scheduler:add_timer(Timer:new(self.scheduler.time()+SAFE_TIME, self.data.id, event))
 				self.data.current_state = S4
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			end
@@ -110,7 +114,7 @@ function TrafficLightController:fire()
 			if event:type() == self.events.CARS_GO then
 				cars_show_yellow()
 				local event = Event:new(self.data.id, self.events.YELLOW_TIMER_EXPIRED)
-				self.scheduler:add_timer(Timer:new(os.time()+YELLOW_DELAY, self.data.id, event))
+				self.scheduler:add_timer(Timer:new(self.scheduler.time()+YELLOW_DELAY, self.data.id, event))
 				self.data.current_state = S5
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			end
