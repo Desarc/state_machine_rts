@@ -26,23 +26,6 @@ function Scheduler:get_next_event()
 	return table.remove(self.event_queue, 1)
 end
 
-local function decode_message(message)
-	-- search for delimiter
-	local delim1 = string.find(message, ";")
-	local state_machine_id = string.sub(message, 1, delim1-1)
-	local delim2 = string.find(message, ";", delim1+1)
-	local type = 0
-	local user_data = nil
-	if delim2 ~= nil then
-		type = tonumber(string.sub(message, delim1+1, delim2-1))
-		user_data = string.sub(message, delim2+1)
-	else
-		type = tonumber(string.sub(message, delim1+1))
-	end
-	local event = Event:new(state_machine_id, type, user_data)
-	return event
-end
-
 function Scheduler:connect_external()
 	local host_ip_str = "192.168.100.20"
 	local host_ip = net.packip(host_ip_str)
@@ -78,7 +61,11 @@ function Scheduler:receive_external()
 	return false
 end
 
+function Scheduler:send_external(message)
+	
 
+
+end
 
 function Scheduler.time()
 	return tmr.read(tmr.SYS_TIMER)
@@ -147,7 +134,7 @@ function Scheduler:run()
 			self:set_active_event(timer:event())
 			success, status = coroutine.resume(state_machine.run, state_machine)
 			if not success then
-				print("Success: "..tostring(success)..", status: "..status)
+				print("Error: "..tostring(success)..", status: "..status)
 				self:remove_state_machine(state_machine)
 			end
 		end
@@ -159,7 +146,7 @@ function Scheduler:run()
 			self:set_active_event(event)
 			success, status = coroutine.resume(state_machine.run, state_machine)
 			if not success then
-				print("Success: "..tostring(success)..", status: "..status)
+				print("Error: "..tostring(success)..", status: "..status)
 				self:remove_state_machine(state_machine)
 			end
 		end
