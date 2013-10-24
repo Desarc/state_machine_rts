@@ -33,6 +33,31 @@ function StateMachine:id()
 	end
 end
 
+-- retrieve the current state of the state machine.
+-- a state machine must always be in a state.
+function StateMachine:get_state()
+	if self.data then
+		return self.data.current_state
+	else
+		error("StateMachine has no state!")
+	end
+end
+
+
+-- set the current state of the state machine.
+-- a state machine must always be in a state.
+function StateMachine:set_state(state)
+	if not self.data then
+		self.data = {}
+	end
+	self.data.current_state = state
+end
+
+
+function StateMachine:to_string()
+	return tostring(self:id())..": "..tostring(self:get_state())
+end
+
 -- StateMachine:new()
 -- function for creating a new StateMachine object (constructor).
 -- subclass constructors should be in the following format:

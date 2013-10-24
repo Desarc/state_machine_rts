@@ -19,7 +19,6 @@ local function main()
 	local err = net.connect(socket, host_ip, port)
 	print("Connect error: " .. err)
 
-	res, err = net.send(socket, "Hello DESARC-LAPTOP!")
 	print("Send result: " .. res)
 	print("Send error: " .. err)
 

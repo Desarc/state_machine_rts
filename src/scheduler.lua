@@ -26,47 +26,6 @@ function Scheduler:get_next_event()
 	return table.remove(self.event_queue, 1)
 end
 
-function Scheduler:connect_external()
-	local host_ip_str = "192.168.100.20"
-	local host_ip = net.packip(host_ip_str)
-	local socket = net.socket(net.SOCK_STREAM)
-	local host_port = 50001
-
-	local err = net.connect(socket, host_ip, host_port)
-
-	if err ~= 0 then
-		print("Connect error: " .. err)
-	else
-		print("Connected to " .. host_ip_str .. "!")
-	end
-	self.socket = socket
-end
-
-function Scheduler:receive_external()
-	local data, err = net.recv(self.socket, "*l", 0)
-	if err ~= 0 then
-		print("Receive error: " .. err)
-		return true
-	elseif data ~= 0 then
-		if data == "terminate" then
-			return true
-		end
-		local event = decode_message(data)
-		self:add_to_queue(event)
-		print("External event received!")
-		--print("Addr: "..tostring(event:state_machine_id()))
-		--print("Type: "..tostring(event:type()))
-		--print("User data: "..tostring(event:get_data()))
-	end
-	return false
-end
-
-function Scheduler:send_external(message)
-	
-
-
-end
-
 function Scheduler.time()
 	return tmr.read(tmr.SYS_TIMER)
 end
@@ -92,7 +51,6 @@ function Scheduler:stop_timer(id)
 	end
 end
 
--- TODO: better precision on timer check
 function Scheduler:check_timers()
 	local now = self.time()
 	if self.timers[1] then
@@ -105,7 +63,7 @@ function Scheduler:set_active_event(event)
 end
 
 function Scheduler:get_active_event()
-	local event = self.active_event
+	event = self.active_event
 	self.active_event = nil
 	return event
 end
@@ -120,12 +78,10 @@ end
 
 function Scheduler:run()
 	print("Scheduler running.")
-	self:connect_external()
 	-- TODO: passive waiting if no events/timers?
 	local success, status, state_machine
-	local terminate = false
 
-	while(not terminate) do
+	while(true) do
 		
 		local timer = self:check_timers()
 		if timer then
@@ -134,8 +90,9 @@ function Scheduler:run()
 			self:set_active_event(timer:event())
 			success, status = coroutine.resume(state_machine.run, state_machine)
 			if not success then
-				print("Error: "..tostring(success)..", status: "..status)
+				print("Success: "..tostring(success)..", status: "..status)
 				self:remove_state_machine(state_machine)
+				break
 			end
 		end
 
@@ -146,13 +103,15 @@ function Scheduler:run()
 			self:set_active_event(event)
 			success, status = coroutine.resume(state_machine.run, state_machine)
 			if not success then
-				print("Error: "..tostring(success)..", status: "..status)
+				print("Success: "..tostring(success)..", status: "..status)
 				self:remove_state_machine(state_machine)
+				break
+			elseif status == StateMachine.TERMINATE_SYSTEM then
+				break
 			end
 		end
-		terminate = self:receive_external()
 	end
-	print("Received exteral command to terminate...")
+	print("Terminating system...")
 end
 
 

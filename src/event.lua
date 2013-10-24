@@ -12,6 +12,10 @@ function Event:get_data()
 	return self.data.user_data
 end
 
+function Event:to_string()
+	return tostring(self:state_machine_id()).."\n"..tostring(self:type()).."\n"..tostring(self:get_data()).."\n"
+end
+
 function Event:new(state_machine_id, event_type, user_data)
 	o = {}
 	setmetatable(o, { __index = self })

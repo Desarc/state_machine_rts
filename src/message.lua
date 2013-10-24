@@ -1,3 +1,5 @@
+Event = dofile("/wo/event.lua")
+
 Message = {}
 
 function Message:serialize()
@@ -30,6 +32,22 @@ function Message.deserialize(content)
 	return message
 end
 
+function Message:generate_event()
+	local state_machine_id, event_type, user_data
+	if self.data.state_machine_id then
+		state_machine_id = self.data.state_machine_id
+	else
+		return nil
+	end
+	if self.data.event_type then
+		event_type = tonumber(self.data.event_type)
+	else
+		return nil
+	end
+	user_data = self.data.user_data	
+	return Event:new(state_machine_id, event_type, user_data)
+end
+
 function Message:content_index()
 	local content_str = ""
 	for k, v in ipairs(self.data) do
@@ -53,9 +71,9 @@ function Message:new(variables)
 	o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
-	print("Creating new message object")
-	print("Variables: "..tostring(variables))
-	print("Number of variables: "..tostring(table.getn(variables)))
+	--print("Creating new message object")
+	--print("Variables: "..tostring(variables))
+	--print("Number of variables: "..tostring(table.getn(variables)))
 	for k,v in ipairs(variables) do
 		print(k..v)
 		o.data[k] = v

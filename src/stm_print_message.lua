@@ -23,19 +23,27 @@ end
 
 function PrintMessageSTM:fire()
 	while(true) do
-		event = self.scheduler:get_active_event()
+		print("Handling event in state machine "..self:id())
+		local event = self.scheduler:get_active_event()
+		local current_state = self:get_state()
 
-		if event:type() == self.TERMINATE_SELF then
+		if event:type() == StateMachine.TERMINATE_SELF then
 			break
-		elseif self.data.current_state == S0 then
+		elseif current_state == S0 then
 			if event:type() == self.events.MESSAGE then
-				print(event:get_data())
+				print(tostring(event:get_data()))
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			else
+				print("Invalid event for this state.")
+				print(event:to_string())
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 		else
+			print("Invalid state.")
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end
 	end
+	coroutine.yield(StateMachine.TERMINATE_SELF)
 end
 
 return PrintMessageSTM
