@@ -26,6 +26,14 @@ function Scheduler:get_next_event()
 	return table.remove(self.event_queue, 1)
 end
 
+function Scheduler:event_queue_length()
+	return table.getn(self.event_queue)
+end
+
+function Scheduler:timer_queue_length()
+	return table.getn(self.timers)
+end
+
 function Scheduler.time()
 	return tmr.read(tmr.SYS_TIMER)
 end
@@ -80,12 +88,18 @@ function Scheduler:run()
 	print("Scheduler running.")
 	-- TODO: passive waiting if no events/timers?
 	local success, status, state_machine
+	local start = self.time()
 
 	while(true) do
 		
+		if start+30000000 < self.time() then -- terminate after 30 sec
+			print("Ran for 30 sec, terminating...")
+			break
+		end
+
 		local timer = self:check_timers()
 		if timer then
-			--print("Timer expired!")
+			print("Timer expired!")
 			state_machine = self.state_machine_list[timer:state_machine_id()]
 			self:set_active_event(timer:event())
 			success, status = coroutine.resume(state_machine.run, state_machine)

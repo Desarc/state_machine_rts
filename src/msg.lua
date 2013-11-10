@@ -1,15 +1,15 @@
-Event = dofile("/wo/event.lua")
+require "event"
 
 Message = {}
 
 function Message:serialize()
 	local serialized_str = ""
-	for i,v in ipairs(self.data) do
+	for i,v in pairs(self.data) do
 		if v ~= nil then
 			serialized_str = serialized_str..tostring(i)..":"..tostring(v)..";"
 		end
 	end
-	return serialized_str
+	return serialized_str..'\n'
 end
 
 function Message.deserialize(content)
@@ -50,7 +50,7 @@ end
 
 function Message:content_index()
 	local content_str = ""
-	for k, v in ipairs(self.data) do
+	for k, v in pairs(self.data) do
 		content_str = content_str.." "..k
 	end
 	return content_str
@@ -71,11 +71,7 @@ function Message:new(variables)
 	o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
-	--print("Creating new message object")
-	--print("Variables: "..tostring(variables))
-	--print("Number of variables: "..tostring(table.getn(variables)))
-	for k,v in ipairs(variables) do
-		print(k..v)
+	for k,v in pairs(variables) do
 		o.data[k] = v
 	end
 	return o

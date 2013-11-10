@@ -1,25 +1,33 @@
-require "state_machine"
+require "stm"
 require "timer"
 require "event"
-require "message"
 
-local ACTIVE, IDLE = "Active", "Idle"
-local EVENT_INTERVAL = 0.01
+local ACTIVE, IDLE = "active", "idle"
+local MEASURE_INTERVAL = 100000
 
-local function generator_start()
-	print("Event generator started!")
-end
+STMQueueLength = StateMachine:new()
 
-STMEventGenerator = StateMachine:new()
-
-STMEventGenerator.events = {
+STMQueueLength.events = {
 	START = 1,
 	STOP = 2,
-	GENERATE_NEW = 3,
+	MEASURE = 3,
 	EXIT = 4,
 }
 
-function STMEventGenerator:new(id, scheduler)
+function STMQueueLength:schedule_measure()
+	local event = Event:new(self.data.id, self.events.MEASURE)
+	self.scheduler:add_timer(Timer:new(MEASURE_INTERVAL, self.data.id, event))
+end
+
+function STMQueueLength:measure()
+	local events = self.scheduler:event_queue_length()
+	local timers = self.scheduler:timer_queue_length()
+	local message = Message:new({events = events, timers = timers})
+	local event = Event:new("stm_ec1", 4, message)
+	self.scheduler:add_to_queue(event)
+end
+
+function STMQueueLength:new(id, scheduler)
 	o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
@@ -30,18 +38,7 @@ function STMEventGenerator:new(id, scheduler)
 	return o
 end
 
-function STMEventGenerator:generate_event()
-	local message = Message:new({stm_id = "stm_c1", event_type = 1})
-	local event = Event:new("stm_ts1", 4, message)
-	self.scheduler:add_to_queue(event)
-end
-
-function STMEventGenerator:schedule_self()
-	local event = Event:new(self.data.id, self.events.GENERATE_NEW)
-	self.scheduler:add_timer(Timer:new(EVENT_INTERVAL, self.data.id, event))
-end
-
-function STMEventGenerator:fire()
+function STMQueueLength:fire()
 	while(true) do
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
@@ -51,8 +48,8 @@ function STMEventGenerator:fire()
 
 		elseif current_state == IDLE then
 			if event:type() == self.events.START then
-				generator_start()
-				self:schedule_self()
+				print("Queue length observer started!")
+				self:schedule_measure()
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -61,10 +58,9 @@ function STMEventGenerator:fire()
 			end
 		
 		elseif current_state == ACTIVE then
-			if event:type() == self.events.GENERATE_NEW then
-				self:generate_event()
-				self:schedule_self()
-				self:set_state(ACTIVE)
+			if event:type() == self.events.MEASURE then
+				self:measure()
+				self:schedule_measure()
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.STOP then
@@ -73,6 +69,7 @@ function STMEventGenerator:fire()
 
 			elseif event:type() == self.events.EXIT then
 				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+
 			end
 
 		else
@@ -82,4 +79,4 @@ function STMEventGenerator:fire()
 
 end
 
-return STMEventGenerator
+return STMQueueLength

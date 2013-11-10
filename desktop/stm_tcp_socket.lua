@@ -7,16 +7,17 @@ local CONNECTED, DISCONNECTED = "Connected", "Disconnected"
 local READ_INTERVAL = 0.01
 
 
-STMTcpReceiveSocket = StateMachine:new()
+STMTcpSocket = StateMachine:new()
 
-STMTcpReceiveSocket.events = {
+STMTcpSocket.events = {
 	CONNECT = 1,
 	DISCONNECT = 2,
 	READ = 3,
-	EXIT = 4,
+	SEND = 4,
+	EXIT = 5,
 }
 
-function STMTcpReceiveSocket:create_socket()
+function STMTcpSocket:create_socket()
 	print("Creating socket...")
 	local server = assert(socket.bind("192.168.100.20", 50001))
 	local ip, port = server:getsockname()
@@ -29,7 +30,7 @@ function STMTcpReceiveSocket:create_socket()
 	self.client:settimeout(1)
 end
 
-function STMTcpReceiveSocket:read_socket()
+function STMTcpSocket:read_socket()
 	--print("Reading socket...")
 	local line, err = self.client:receive('*l')
 	if line == nil then
@@ -44,7 +45,24 @@ function STMTcpReceiveSocket:read_socket()
 	return true
 end
 
-function STMTcpReceiveSocket:new(id, scheduler)
+function STMTcpSocket:send_message(message)
+	local data = message:serialize()
+	local success, err = self.client:send(data)
+	if success == nil then
+		print(err)
+		if err == 'closed' then
+			return false
+		end
+	end
+	return true
+end
+
+function STMTcpSocket:schedule_read()
+	local event = Event:new(self.data.id, self.events.READ)
+	self.scheduler:add_timer(Timer:new(READ_INTERVAL, self.data.id, event))
+end
+
+function STMTcpSocket:new(id, scheduler)
 	o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
@@ -55,21 +73,20 @@ function STMTcpReceiveSocket:new(id, scheduler)
 	return o
 end
 
-function STMTcpReceiveSocket:fire()
+function STMTcpSocket:fire()
 	while(true) do
 		local event = self.scheduler:get_active_event()
+		local current_state = self:get_state()
 
 		if event:type() == self.TERMINATE_SELF then
 			self.client:close()
 			break
 
-		elseif self.data.current_state == DISCONNECTED then
+		elseif current_state == DISCONNECTED then
 			if event:type() == self.events.CONNECT then
 				self:create_socket()
-				local event = Event:new(self.data.id, self.events.READ)
-				local timer = Timer:new(self.scheduler.time()+READ_INTERVAL, self.data.id, event)
-				self.scheduler:add_timer(timer)
-				self.data.current_state = CONNECTED
+				self:schedule_read()
+				self:set_state(CONNECTED)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.EXIT then
@@ -78,23 +95,31 @@ function STMTcpReceiveSocket:fire()
 			
 			end
 		
-		elseif self.data.current_state == CONNECTED then
+		elseif current_state == CONNECTED then
 			if event:type() == self.events.READ then
 				if self:read_socket() then
-					local event = Event:new(self.data.id, self.events.READ)
-					self.scheduler:add_timer(Timer:new(self.scheduler.time()+READ_INTERVAL, self.data.id, event))
-					self.data.current_state = CONNECTED
+					self:schedule_read()
+					self:set_state(CONNECTED)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				else
 					self.client:close()
-					self.data.current_state = DISCONNECTED
+					self:set_state(DISCONNECTED)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				end
-				
+
+			elseif event:type() == self.events.SEND then
+				if self:send_message(event:get_data()) then
+					self:set_state(CONNECTED)
+					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				else
+					self.client:close()
+					self:set_state(DISCONNECTED)
+					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				end
 
 			elseif event:type() == self.events.DISCONNECT then
 				self.client:close()
-				self.data.current_state = DISCONNECTED
+				self:set_state(DISCONNECTED)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.EXIT then
@@ -109,4 +134,4 @@ function STMTcpReceiveSocket:fire()
 
 end
 
-return STMTcpReceiveSocket
+return STMTcpSocket
