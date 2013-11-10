@@ -93,6 +93,8 @@ function Scheduler:run()
 				print("Success: "..tostring(success)..", status: "..status)
 				self:remove_state_machine(state_machine)
 				break
+			elseif status == StateMachine.TERMINATE_SYSTEM then
+				break
 			end
 		end
 

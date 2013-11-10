@@ -18,7 +18,7 @@ STMTcpReceiveSocket.events = {
 
 function STMTcpReceiveSocket:create_socket()
 	print("Creating socket...")
-	local server = assert(socket.bind("127.0.0.1", 50001))
+	local server = assert(socket.bind("192.168.100.20", 50001))
 	local ip, port = server:getsockname()
 	print("Host IP: "..tostring(ip)..", port: "..tostring(port))
 	self.client = server:accept()
@@ -37,6 +37,7 @@ function STMTcpReceiveSocket:read_socket()
 		if err == 'closed' then
 			return false
 		end
+		return true
 	else	
 		print(line)
 	end

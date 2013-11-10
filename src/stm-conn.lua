@@ -1,7 +1,7 @@
-StateMachine = dofile("/wo/state_machine.lua")
+StateMachine = dofile("/wo/stm.lua")
 Timer = dofile("/wo/timer.lua")
 Event = dofile("/wo/event.lua")
-Message = dofile("/wo/message.lua")
+Message = dofile("/wo/msg.lua")
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
 local RECEIVE_DELAY = 500
@@ -51,6 +51,7 @@ end
 
 
 function ExternalConnectionSTM:send_external(message)
+	print("Sending message: "..message)
 	local data = Message.serialize(message)
 	res, err = net.send(self.socket, data)
 	if err ~= 0 then
@@ -111,7 +112,7 @@ function ExternalConnectionSTM:fire()
 			if event:type() == self.events.CONNECT then
 				if self:connect_external() then
 					self:set_state(CONNECTED)
-					self:schedule_receive()
+					self:schedule_send()
 				else
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely
 				end
@@ -135,7 +136,7 @@ function ExternalConnectionSTM:fire()
 					self.print_error(err)
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM)
 				end
-				self.schedule_send()
+				self:schedule_send()
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			elseif event:type() == self.events.RECEIVE_MESSAGE then
 				local err = self:receive_external()
