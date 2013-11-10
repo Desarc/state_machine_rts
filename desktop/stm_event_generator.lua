@@ -4,7 +4,7 @@ require "event"
 require "message"
 
 local ACTIVE, IDLE = "Active", "Idle"
-local EVENT_INTERVAL = 0.01
+local EVENT_INTERVAL = 1
 
 local function generator_start()
 	print("Event generator started!")
@@ -20,13 +20,14 @@ STMEventGenerator.events = {
 }
 
 function STMEventGenerator:new(id, scheduler)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
 	o.data.id = id
 	o.data.current_state = IDLE
 	o.scheduler = scheduler
 	scheduler:add_state_machine(o)
+	o.count = 0
 	return o
 end
 
@@ -34,6 +35,8 @@ function STMEventGenerator:generate_event()
 	local message = Message:new({stm_id = "stm_c1", event_type = 1})
 	local event = Event:new("stm_ts1", 4, message)
 	self.scheduler:add_to_queue(event)
+	self.count = self.count + 1
+	print("Total count should now be "..self.count)
 end
 
 function STMEventGenerator:schedule_self()

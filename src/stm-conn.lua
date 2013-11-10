@@ -4,8 +4,7 @@ require "event"
 require "msg"
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
-local RECEIVE_DELAY = 50000
-local SEND_DELAY = 1000
+local RECEIVE_DELAY = 5000
 
 STMExternalConnection = StateMachine:new()
 
@@ -45,29 +44,40 @@ function STMExternalConnection:connect_external()
 	else
 		print("Connected to " .. host_ip_str .. "!")
 		self.socket = socket
-		self.count = 0
 		return true
 	end
 end
 
 
 function STMExternalConnection:send_external(message)
-	local data = message:serialize()
-	print("Sending message: "..data)
-	res, err = net.send(self.socket, data)
+	-- buffer any data waiting...
+	local in_data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 100000) -- timeout must be long enough to receive a waiting message
+	if in_data then
+		print("data: "..tostring(in_data)..", err: "..tostring(err))
+		local message = Message.deserialize(in_data)
+		local event = message:generate_event()
+		if event then
+			self.scheduler:add_to_queue(event)
+		end
+	end
+	local out_data = message:serialize()
+	print("Sending message: "..out_data)
+	res, err = net.send(self.socket, out_data)
 	if err ~= 0 then
 		return res, err
 	end
-	self.count = self.count+1
 end
 
 
 function STMExternalConnection:receive_external()
-	local data, err = net.recv(self.socket, "*l", nil, 50)
+	--print("Reading socket...")
+	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 100000)
+	--print("data: "..tostring(data)..", err: "..tostring(err))
 	if err ~= 0 then
+		self.print_error(err)
 		return err
 	elseif data ~= 0 then
-		print("External message received!")
+		--print("External message received!")
 		if data == "terminate" then
 			return data
 		end
@@ -107,7 +117,7 @@ function STMExternalConnection:fire()
 			if event:type() == self.events.CONNECT then
 				if self:connect_external() then
 					self:set_state(CONNECTED)
-					self:schedule_receive()
+					--self:schedule_receive()
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				else
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely

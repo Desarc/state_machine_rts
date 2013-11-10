@@ -99,7 +99,7 @@ function Scheduler:run()
 
 		local timer = self:check_timers()
 		if timer then
-			print("Timer expired!")
+			--print("Timer expired!")
 			state_machine = self.state_machine_list[timer:state_machine_id()]
 			self:set_active_event(timer:event())
 			success, status = coroutine.resume(state_machine.run, state_machine)

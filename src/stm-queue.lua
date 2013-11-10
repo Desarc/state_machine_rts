@@ -3,7 +3,7 @@ require "timer"
 require "event"
 
 local ACTIVE, IDLE = "active", "idle"
-local MEASURE_INTERVAL = 100000
+local MEASURE_INTERVAL = 10000
 
 STMQueueLength = StateMachine:new()
 

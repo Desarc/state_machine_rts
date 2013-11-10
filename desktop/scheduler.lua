@@ -126,7 +126,7 @@ end
 
 
 function Scheduler:new()
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.state_machine_list = {}
 	o.event_queue = {}

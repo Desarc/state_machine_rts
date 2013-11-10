@@ -1,10 +1,11 @@
 require "state_machine"
 require "timer"
 require "event"
+require "logger"
 local socket = require "socket"
 
 local CONNECTED, DISCONNECTED = "Connected", "Disconnected"
-local READ_INTERVAL = 0.01
+local READ_INTERVAL = 0.001
 
 
 STMTcpSocket = StateMachine:new()
@@ -27,26 +28,30 @@ function STMTcpSocket:create_socket()
 	local rip, rport = self.client:getpeername()
 	print("Client IP: "..tostring(rip)..", port: "..tostring(rport))
 	self.client:setoption('keepalive', true)
-	self.client:settimeout(1)
 end
 
 function STMTcpSocket:read_socket()
 	--print("Reading socket...")
+	self.client:settimeout(0)
 	local line, err = self.client:receive('*l')
 	if line == nil then
-		print(err)
+		--print(err)
 		if err == 'closed' then
 			return false
 		end
 		return true
-	else	
+	else
 		print(line)
+		local message = Message.deserialize(line)
+		self.logger:log(message.data.events.." "..message.data.timers)
 	end
 	return true
 end
 
 function STMTcpSocket:send_message(message)
 	local data = message:serialize()
+	print("Sending message: "..data)
+	self.client:settimeout(1)
 	local success, err = self.client:send(data)
 	if success == nil then
 		print(err)
@@ -63,13 +68,15 @@ function STMTcpSocket:schedule_read()
 end
 
 function STMTcpSocket:new(id, scheduler)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
 	o.data.id = id
 	o.data.current_state = DISCONNECTED
 	o.scheduler = scheduler
 	scheduler:add_state_machine(o)
+	local logger = Logger:new("queue.txt")
+	o.logger = logger
 	return o
 end
 
@@ -80,6 +87,7 @@ function STMTcpSocket:fire()
 
 		if event:type() == self.TERMINATE_SELF then
 			self.client:close()
+			self.logger:close()
 			break
 
 		elseif current_state == DISCONNECTED then
@@ -91,6 +99,7 @@ function STMTcpSocket:fire()
 
 			elseif event:type() == self.events.EXIT then
 				self.client:close()
+				self.logger:close()
 				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
 			
 			end
@@ -124,6 +133,7 @@ function STMTcpSocket:fire()
 
 			elseif event:type() == self.events.EXIT then
 				self.client:close()
+				self.logger:close()
 				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
 			end
 

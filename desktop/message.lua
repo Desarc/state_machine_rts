@@ -58,7 +58,7 @@ end
 function Message:content_index()
 	local content_str = ""
 	for k, v in pairs(self.data) do
-		content_str = content_str.." "..k
+		content_str = content_str..k.." "
 	end
 	return content_str
 end
@@ -75,12 +75,9 @@ end
 	message may contain any variables
 ]]
 function Message:new(variables)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
-	--print("Creating new message object")
-	--print("Variables: "..tostring(variables))
-	--print("Number of variables: "..tostring(table.getn(variables)))
 	for k,v in pairs(variables) do
 		o.data[k] = v
 	end

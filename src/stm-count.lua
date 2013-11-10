@@ -33,8 +33,8 @@ function STMCounter:fire()
 
 		elseif current_state == COUNTING then
 			if event:type() == self.events.COUNT then
-				print("+1! Total count is now "..tostring(self.count))
 				self.count = self.count + 1
+				print("+1! Total count is now "..tostring(self.count))
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.RESET then
