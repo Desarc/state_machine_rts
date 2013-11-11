@@ -42,7 +42,7 @@ end
 function Message:generate_event()
 	local state_machine_id, event_type, user_data
 	if self.data.stm_id then
-		state_machine_id = self.data.state_machine_id
+		state_machine_id = self.data.stm_id
 	else
 		return nil
 	end

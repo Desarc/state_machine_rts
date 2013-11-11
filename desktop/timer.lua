@@ -17,7 +17,7 @@ function Timer:id()
 end
 
 function Timer.time()
-	return os.clock()
+	return os.time()
 end
 
 

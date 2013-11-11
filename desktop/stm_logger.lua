@@ -1,6 +1,4 @@
 require "state_machine"
-require "timer"
-require "event"
 require "logger"
 
 local INACTIVE, ACTIVE = "active", "inactive"
@@ -14,11 +12,12 @@ STMLogger.events = {
 }
 
 function STMLogger:log(data)
+	print("Logging data...")
 	self.logger:log(data)
 end
 
 function STMLogger:open(filename)
-	self.logger = Logger:new("log.txt")
+	self.logger = Logger:new(filename)
 end
 
 function STMLogger:new(id, scheduler)
@@ -41,9 +40,9 @@ function STMLogger:fire()
 			self.logger:close()
 			break
 
-		if current_state == INACTIVE then
+		elseif current_state == INACTIVE then
 			if event:type() == self.events.START then
-				self:open(event.get_data())
+				self:open(event:get_data())
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -52,6 +51,7 @@ function STMLogger:fire()
 
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
 
 		elseif current_state == ACTIVE then
 			if event:type() == self.events.LOG then
@@ -65,7 +65,7 @@ function STMLogger:fire()
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
-			
+
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end

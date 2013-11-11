@@ -38,16 +38,19 @@ function STMTcpSocket:read_socket()
 		end
 		return true
 	else
-		print(line)
 		local message = Message.deserialize(line)
-		self.scheduler:add_to_queue(message:generate_event())
+		local event = message:generate_event()
+		if event then
+			print("Data received!")
+			self.scheduler:add_to_queue(event)
+		end
 	end
 	return true
 end
 
 function STMTcpSocket:send_message(message)
 	local data = message:serialize()
-	print("Sending message: "..data)
+	--print("Sending message: "..data)
 	self.client:settimeout(5)
 	local success, err = self.client:send(data)
 	if success == nil then
@@ -60,7 +63,7 @@ function STMTcpSocket:send_message(message)
 end
 
 function STMTcpSocket:schedule_read()
-	local event = Event:new(self.data.id, self.events.READ)
+	local event = Event:new(self:id(), self.events.READ)
 	self.scheduler:add_to_queue(event)
 end
 
@@ -95,6 +98,10 @@ function STMTcpSocket:fire()
 			elseif event:type() == self.events.EXIT then
 				self.logger:close()
 				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+			
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			
 			end
 		
 		elseif current_state == CONNECTED then
@@ -118,6 +125,10 @@ function STMTcpSocket:fire()
 				self.client:close()
 				self.logger:close()
 				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+			
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+			
 			end
 
 		elseif current_state == WAITING_DATA then

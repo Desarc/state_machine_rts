@@ -51,7 +51,7 @@ end
 
 function STMExternalConnection:send_external(message)
 	local out_data = message:serialize()
-	print("Sending message: "..out_data)
+	print("Sending data...")
 	res, err = net.send(self.socket, out_data)
 	if err ~= 0 then
 		return res, err
@@ -61,10 +61,10 @@ end
 
 function STMExternalConnection:receive_external()
 	--print("Reading socket...")
-	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 1000)
+	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 10000)
 	--print("data: "..tostring(data)..", err: "..tostring(err))
 	if err ~= 0 then
-		self.print_error(err)
+		--self.print_error(err)
 		return err
 	elseif data ~= 0 then
 		--print("External message received!")
@@ -74,6 +74,7 @@ function STMExternalConnection:receive_external()
 		local message = Message.deserialize(data)
 		local event = message:generate_event()
 		if event then
+			print("Received data request!")
 			self.scheduler:add_to_queue(event)
 		end
 	end
@@ -103,23 +104,27 @@ function STMExternalConnection:fire()
 
 		if event:type() == self.TERMINATE_SELF then
 			break
+
 		elseif current_state == DISCONNECTED then
+			
 			if event:type() == self.events.CONNECT then
 				if self:connect_external() then
 					self:set_state(CONNECTED)
-					--self:schedule_receive()
+					self:schedule_receive()
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				
 				else
-					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely
+					coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+				
 				end
 				
 			else
-				print("Invalid event for this state.")
-				print("State: "..tostring(current_state))
-				print(event:to_string())
 				coroutine.yield(StateMachine.DISCARD_EVENT)	
+
 			end
+
 		elseif current_state == CONNECTED then
+			
 			if event:type() == self.events.DISCONNECT then
 				self:disconnect_external()
 				self:set_state(DISCONNECTED)
@@ -132,32 +137,29 @@ function STMExternalConnection:fire()
 					print("Sending error: "..res..", terminating system...")
 					self.print_error(err)
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+				
 				else
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				
 				end
 
 			elseif event:type() == self.events.RECEIVE_MESSAGE then
 				local err = self:receive_external()
-				if err == "terminate" then
-					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely
-				
-				elseif err == net.ERR_CLOSED or err == net.ERR_ABORTED then
+				if err == net.ERR_CLOSED or err == net.ERR_ABORTED then
 					print("Connection closed.")
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely
 				
 				else
 					self:schedule_receive()
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
 				end
+
 			else
-				print("Invalid event for this state.")
-				print("State: "..tostring(current_state))
-				print(event:to_string())
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
+
 		else
-			print("Invalid state.")
-			print(event:to_string())
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end
 	end
