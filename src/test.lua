@@ -1,28 +1,20 @@
+local task_size = 10
+local task_repeats = 1
+local measurements = 5
 
-print("This is a test.")
-
-Message = dofile("message.lua")
-
-message = Message:new({title="hello", time="12:30", number=12})
-
-print(message:lookup("title"))
-
-print(message:content_index())
-
-str = message:serialize()
-
-print(str)
-
-message2 = Message.deserialize(str)
-
-print(message2:content_index())
-
-Test = {}
-
-function help(table)
-	for k,v in ipairs(table) do
-		print(k..v)
+local function busy_work()
+	for i=1,task_size do
+		q = i*i
 	end
 end
 
-help({test1="huh", test2="hm"})
+for i=1,measurements do
+	local start_time = tmr.read(tmr.SYS_TIMER)
+
+	for j=1,task_repeats do
+		busy_work()
+	end
+
+	local delta = tmr.read(tmr.SYS_TIMER) - start_time
+	print("Delta: "..tostring(delta))
+end

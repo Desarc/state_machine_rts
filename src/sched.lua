@@ -92,11 +92,12 @@ function Scheduler:run()
 
 	while(true) do
 		
+		--[[
 		if start+30000000 < self.time() then -- terminate after 30 sec
 			print("Ran for 30 sec, terminating...")
 			break
 		end
-
+		]]
 		local timer = self:check_timers()
 		if timer then
 			--print("Timer expired!")

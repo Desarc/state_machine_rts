@@ -35,7 +35,7 @@ function Scheduler:timer_queue_length()
 end
 
 function Scheduler.time()
-	return os.clock()
+	return os.time()
 end
 
 local function timers_cmp(t1, t2)

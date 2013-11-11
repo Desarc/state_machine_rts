@@ -39,6 +39,13 @@ function STMEventGenerator:generate_event()
 	print("Total count should now be "..self.count)
 end
 
+function STMEventGenerator:generate_request()
+	local message = Message:new({stm_id = "stm_c1", event_type = 1})
+	local event = Event:new("stm_ts1", 4, message)
+	self.scheduler:add_to_queue(event)
+	print("Requesting readings...")
+end
+
 function STMEventGenerator:schedule_self()
 	local event = Event:new(self.data.id, self.events.GENERATE_NEW)
 	self.scheduler:add_timer(Timer:new(EVENT_INTERVAL, self.data.id, event))

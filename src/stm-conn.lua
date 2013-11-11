@@ -4,7 +4,7 @@ require "event"
 require "msg"
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
-local RECEIVE_DELAY = 5000
+local RECEIVE_DELAY = 500000
 
 STMExternalConnection = StateMachine:new()
 
@@ -50,16 +50,6 @@ end
 
 
 function STMExternalConnection:send_external(message)
-	-- buffer any data waiting...
-	local in_data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 100000) -- timeout must be long enough to receive a waiting message
-	if in_data then
-		print("data: "..tostring(in_data)..", err: "..tostring(err))
-		local message = Message.deserialize(in_data)
-		local event = message:generate_event()
-		if event then
-			self.scheduler:add_to_queue(event)
-		end
-	end
 	local out_data = message:serialize()
 	print("Sending message: "..out_data)
 	res, err = net.send(self.socket, out_data)
@@ -71,7 +61,7 @@ end
 
 function STMExternalConnection:receive_external()
 	--print("Reading socket...")
-	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 100000)
+	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 1000)
 	--print("data: "..tostring(data)..", err: "..tostring(err))
 	if err ~= 0 then
 		self.print_error(err)
