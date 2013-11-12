@@ -1,4 +1,6 @@
-Timer = {}
+Timer = {
+	BASE = 1000, -- number of time units for 1ms
+}
 
 function Timer:expires()
 	return self.data.expires

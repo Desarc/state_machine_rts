@@ -67,7 +67,7 @@ function Scheduler:add_timer(timer)
 end
 
 function Scheduler:stop_timer(id)
-	for k, v in self.timers do
+	for k, v in pairs(self.timers) do
 		if v:id() == id then
 			table.remove(self.timers, k)
 			break
@@ -93,11 +93,8 @@ function Scheduler:get_active_event()
 end
 
 function Scheduler:check_active()
-	if table.getn(self.timers) > 0 or table.getn(self.event_queue) > 0 then
-		return true
-	else
-		return false
-	end
+	if table.getn(self.timers) > 0 or table.getn(self.event_queue) > 0 then return true
+	else return false end
 end
 
 function Scheduler:new(system_type)
@@ -109,7 +106,7 @@ function Scheduler:new(system_type)
 	if system_type == self.type.DESKTOP then
 		o.time = desktop_time
 		o.timeout = DESKTOP_TIMEOUT
-	else if system_type == self.type.CONTROLLER then
+	elseif system_type == self.type.CONTROLLER then
 		o.time = controller_time
 		o.timeout = CONTROLLER_TIMEOUT
 	end

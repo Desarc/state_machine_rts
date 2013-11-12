@@ -1,15 +1,16 @@
-StateMachine = require "state_machine"
-Timer = require "timer"
+StateMachine = require "stm"
+Timer = require "desktop-timer"
 Event = require "event"
 
 local S0, S1, S2, S3, S4, S5 = "S0", "S1", "S2", "S3", "S4", "S5"
-local YELLOW_DELAY = 3000000
-local PEDESTRIAN_TIME = 10000000
-local SAFE_TIME = 1000000
+local T1, T2, T3, T4, T5 = "t1", "t2", "t3", "t4", "t5"
+local YELLOW_DELAY = 3000*Timer.BASE
+local PEDESTRIAN_TIME = 1*Timer.BASE
+local SAFE_TIME = 1*Timer.BASE
 
-TrafficLightController = StateMachine:new()
+STMTrafficLightController = StateMachine:new()
 
-TrafficLightController.events = {
+STMTrafficLightController.events = {
 	PEDESTRIAN_BUTTON_PRESSED = 1,
 	YELLOW_TIMER_EXPIRED = 2,
 	PEDESTRIANS_GO = 3,
@@ -17,14 +18,14 @@ TrafficLightController.events = {
 	CARS_GO = 5,
 }
 
-function TrafficLightController:schedule_event(type, delay, timer_no)
+function STMTrafficLightController:schedule_event(type, delay, timer_no)
 	local event = Event:new(self:id(), type)
-	local timer = Timer:new(self:id().."-"..timer_no, delay, self:id(), event))
-	event:set_data(timer_no)
+	local timer = Timer:new(self:id()..timer_no, delay, self:id(), event)
+	event:set_timer_id(timer_no)
 	self.scheduler:add_timer(timer)
 end
 
-function TrafficLightController:new(id, scheduler)
+function STMTrafficLightController:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self})
 	o.data = {}
@@ -35,7 +36,7 @@ function TrafficLightController:new(id, scheduler)
 	return o
 end
 
-function TrafficLightController:fire()
+function STMTrafficLightController:fire()
 
 	print("Pedestrian light set to red.")
 	print("Car light set to green.")
@@ -47,7 +48,7 @@ function TrafficLightController:fire()
 		if current_state == S0 then
 			if event:type() == self.events.PEDESTRIAN_BUTTON_PRESSED then
 				print("Car light set to yellow.")
-				self:schedule_event(self.events.YELLOW_TIMER_EXPIRED, YELLOW_DELAY, "t1")
+				self:schedule_event(self.events.YELLOW_TIMER_EXPIRED, YELLOW_DELAY, T1)
 				self:set_state(S1)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -56,10 +57,10 @@ function TrafficLightController:fire()
 			end
 		
 		elseif current_state == S1 then
-			if event:type() == self.events.YELLOW_TIMER_EXPIRED and event:get_data() == "t1" then
+			if event:type() == self.events.YELLOW_TIMER_EXPIRED and event:timer_id() == T1 then
 				print("Car light set to red.")
-				self:schedule_event(self.events.PEDESTRIANS_GO, SAFE_TIME, "t2")
-				self.set_state(S2)
+				self:schedule_event(self.events.PEDESTRIANS_GO, SAFE_TIME, T2)
+				self:set_state(S2)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			else
@@ -67,9 +68,9 @@ function TrafficLightController:fire()
 			end
 
 		elseif current_state == S2 then
-			if event:type() == self.events.PEDESTRIANS_GO and event:get_data() == "t2" then
+			if event:type() == self.events.PEDESTRIANS_GO and event:timer_id() == T2 then
 				print("Pedestrian light set to green.")
-				self:schedule_event(self.events.PEDESTRIAN_TIMER_EXPIRED, PEDESTRIAN_TIME, "t3")
+				self:schedule_event(self.events.PEDESTRIAN_TIMER_EXPIRED, PEDESTRIAN_TIME, T3)
 				self:set_state(S3)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -78,9 +79,9 @@ function TrafficLightController:fire()
 			end
 
 		elseif current_state == S3 then
-			if event:type() == self.events.PEDESTRIAN_TIMER_EXPIRED and event:get_data() == "t3" then
+			if event:type() == self.events.PEDESTRIAN_TIMER_EXPIRED and event:timer_id() == T3 then
 				print("Pedestrian light set to red.")
-				self:schedule_event(self.events.CARS_GO, SAFE_TIME, "t4")
+				self:schedule_event(self.events.CARS_GO, SAFE_TIME, T4)
 				self:set_state(S4)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -89,9 +90,9 @@ function TrafficLightController:fire()
 			end
 
 		elseif current_state == S4 then
-			if event:type() == self.events.CARS_GO and event:get_data() == "t4" then
+			if event:type() == self.events.CARS_GO and event:timer_id() == T4 then
 				print("Car light set to yellow.")
-				self:schedule_event(self.events.YELLOW_TIMER_EXPIRED, YELLOW_DELAY, "t5")
+				self:schedule_event(self.events.YELLOW_TIMER_EXPIRED, YELLOW_DELAY, T5)
 				self:set_state(S5)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -100,7 +101,7 @@ function TrafficLightController:fire()
 			end
 
 		elseif current_state == S5 then
-			if event:type() == self.events.YELLOW_TIMER_EXPIRED and event:get_data() == "t5" then
+			if event:type() == self.events.YELLOW_TIMER_EXPIRED and event:timer_id() == T5 then
 				print("Car light set to green.")
 				self:set_state(S0)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
@@ -115,4 +116,4 @@ function TrafficLightController:fire()
 	end
 end
 
-return TrafficLightController
+return STMTrafficLightController

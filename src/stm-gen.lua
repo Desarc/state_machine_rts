@@ -4,7 +4,9 @@ Event = require "event"
 STMSimpleTask = require "stm-task"
 
 local INACTIVE, ACTIVE  = "inactive", "active"
-local EVENT_INTERVAL = 10000
+local T1 = "t1"
+local EVENT_INTERVAL = 10*Timer.Base
+local EVENT_TARGET = "stm_st1"
 
 STMEventGenerator = StateMachine:new()
 
@@ -25,13 +27,15 @@ function STMEventGenerator:new(id, scheduler)
 	return o
 end
 
-function STMEventGenerator:schedule_self()
+function STMEventGenerator:schedule_self(timer_no)
 	local event = Event:new(self:id(), self.events.GENERATE)
-	self.scheduler:add_timer(Timer:new(self:id(), EVENT_INTERVAL, event)
+	local timer = Timer:new(self:id()..timer_no, self:id(), EVENT_INTERVAL, event)
+	event:add_timer_id(timer_no)
+	self.scheduler:add_timer(timer)
 end
 
 function STMEventGenerator:schedule_event()
-	local event = Event:new("stm_st1", STMSimpleTask.events.RUN_TASK)
+	local event = Event:new(EVENT_TARGET, STMSimpleTask.events.RUN_TASK)
 	self.scheduler:add_to_queue(event)
 end
 
@@ -42,7 +46,7 @@ function STMEventGenerator:fire()
 
 		if current_state == INACTIVE then
 			if event:type() == self.events.START then
-				self:schedule_self()
+				self:schedule_self(T1)
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			
@@ -53,7 +57,7 @@ function STMEventGenerator:fire()
 
 		elseif current_state == ACTIVE then
 			if event:type() == self.events.RUN_TASK then
-				self:schedule_self()
+				self:schedule_self(T1)
 				self:schedule_event()
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			

@@ -1,9 +1,14 @@
 StateMachine = require "stm"
 Timer = require "timer"
 Event = require "event"
+STMExternalConnection = require "stm-conn"
+STMLogger = require "stm-logger"
 
 local ACTIVE, IDLE = "active", "idle"
-local MEASURE_INTERVAL = 100000
+local T1 = "t1"
+local MEASURE_INTERVAL = 100*Timer.BASE
+local CONN_ID = "stm_ec1"
+local ASSOCIATE_ID = "stm_l1"
 
 STMQueueLength = StateMachine:new()
 
@@ -14,9 +19,11 @@ STMQueueLength.events = {
 	SEND_DATA = 4,
 }
 
-function STMQueueLength:schedule_measure()
+function STMQueueLength:schedule_measure(timer_no)
 	local event = Event:new(self:id(), self.events.MEASURE)
-	self.scheduler:add_timer(Timer:new(MEASURE_INTERVAL, self:id(), event))
+	local timer = Timer:new(self:id()..timer_no, MEASURE_INTERVAL, self:id(), event)
+	event:set_timer_id(timer_no)
+	self.scheduler:add_timer(timer)
 end
 
 function STMQueueLength:measure()
@@ -31,8 +38,8 @@ function STMQueueLength:send_data()
 		data = data..tostring(v).." "
 	end
 	self.measurements = {}
-	local message = Message:new({stm_id = "stm_l1", event_type = 2, user_data = data})
-	local event = Event:new("stm_ec1", 4, message)
+	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = STMLogger.events.LOG, user_data = data})
+	local event = Event:new(CONN_ID, STMExternalConnection.events.SEND_MESSAGE, message)
 	self.scheduler:add_to_queue(event)
 end
 
@@ -56,7 +63,7 @@ function STMQueueLength:fire()
 		if current_state == IDLE then
 			if event:type() == self.events.START then
 				print("Queue length observer started!")
-				self:schedule_measure()
+				self:schedule_measure(T1)
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -67,7 +74,7 @@ function STMQueueLength:fire()
 		elseif current_state == ACTIVE then
 			if event:type() == self.events.MEASURE then
 				self:measure()
-				self:schedule_measure()
+				self:schedule_measure(T1)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.SEND_DATA then

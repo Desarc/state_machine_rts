@@ -3,12 +3,13 @@ Timer = require "desktop-timer"
 Event = require "event"
 Message = require "msg"
 STMTcpSocket = require "stm-tcp"
+STMQueueLength = require "stm-queue"
 
 local ACTIVE, IDLE = "active", "idle"
-local EVENT_INTERVAL = 1
+local T1 = "t1"
+local EVENT_INTERVAL = 1000*Timer.BASE
 local SOCKET_ID = "stm_ts1"
 local ASSOCIATE_ID = "stm_ql1"
-local ASSOCIATE_EVENT = 4 -- STMQueueLength.events.SEND_DATA
 
 STMEventGenerator = StateMachine:new()
 
@@ -31,14 +32,16 @@ end
 
 function STMEventGenerator:generate_request()
 	print("Requesting readings...")
-	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT})
+	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = STMQueueLength.events.SEND_DATA})
 	local event = Event:new(SOCKET_ID, STMTcpSocket.events.REQUEST, message)
 	self.scheduler:add_to_queue(event)
 end
 
-function STMEventGenerator:schedule_self()
+function STMEventGenerator:schedule_self(timer_no)
 	local event = Event:new(self:id(), self.events.GENERATE_NEW)
-	self.scheduler:add_timer(Timer:new(EVENT_INTERVAL, self:id(), event))
+	local timer = Timer:new(self:id()..timer_no, EVENT_INTERVAL, self:id(), event)
+	event:set_timer_id(timer_no)
+	self.scheduler:add_timer(timer)
 end
 
 function STMEventGenerator:fire()
@@ -62,7 +65,7 @@ function STMEventGenerator:fire()
 			
 			if event:type() == self.events.GENERATE_NEW then
 				self:generate_request()
-				self:schedule_self()
+				self:schedule_self(T1)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.STOP then

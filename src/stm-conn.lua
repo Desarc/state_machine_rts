@@ -4,8 +4,9 @@ Event = require "event"
 Message = require "msg"
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
-local RECEIVE_INTERVAL = 500000
-local RECEIVE_TIMEOUT = 10000
+local T1 = "t1"
+local RECEIVE_INTERVAL = 500*Timer.BASE
+local RECEIVE_TIMEOUT = 10*Timer.BASE
 
 STMExternalConnection = StateMachine:new()
 
@@ -75,9 +76,11 @@ function STMExternalConnection:receive_external()
 	return false
 end
 
-function STMExternalConnection:schedule_receive()
+function STMExternalConnection:schedule_receive(timer_no)
 	local event = Event:new(self:id(), self.events.RECEIVE_MESSAGE)
-	self.scheduler:add_timer(Timer:new(RECEIVE_INTERVAL, self:id(), event))
+	local timer = Timer:new(self:id()..timer_no, RECEIVE_INTERVAL, self:id(), event)
+	event:set_timer_id(timer_no)
+	self.scheduler:add_timer(timer)
 end
 
 function STMExternalConnection:new(id, scheduler)
@@ -101,17 +104,15 @@ function STMExternalConnection:fire()
 			if event:type() == self.events.CONNECT then
 				if self:connect_external() then
 					self:set_state(CONNECTED)
-					self:schedule_receive()
+					self:schedule_receive(T1)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				
 				else
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM)
-				
 				end
 				
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)	
-
 			end
 
 		elseif current_state == CONNECTED then
@@ -142,7 +143,6 @@ function STMExternalConnection:fire()
 				else
 					self:schedule_receive()
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
 				end
 
 			else

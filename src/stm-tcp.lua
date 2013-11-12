@@ -4,8 +4,8 @@ Event = require "event"
 local socket = require "socket"
 
 local CONNECTED, DISCONNECTED, WAITING_DATA = "connected", "disconnected", "waiting_data"
-local READ_TIMEOUT = 5
-local SEND_TIMEOUT = 5
+local READ_TIMEOUT = 5000*Timer.BASE
+local SEND_TIMEOUT = 5000*Timer.BASE
 
 
 STMTcpSocket = StateMachine:new()
