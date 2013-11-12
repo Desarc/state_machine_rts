@@ -1,4 +1,4 @@
-require "event"
+Event = require "event"
 
 Message = {}
 
@@ -68,7 +68,7 @@ end
 	message may contain any variables
 ]]
 function Message:new(variables)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
 	for k,v in pairs(variables) do

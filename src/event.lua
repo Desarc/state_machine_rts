@@ -17,7 +17,7 @@ function Event:to_string()
 end
 
 function Event:new(state_machine_id, event_type, user_data)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {state_machine_id = state_machine_id, event_type = event_type, user_data = user_data}
 	return o

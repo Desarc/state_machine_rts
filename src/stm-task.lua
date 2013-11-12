@@ -1,18 +1,24 @@
-StateMachine = require "state_machine"
-Timer = require "timer"
-Event = require "event"
+StateMachine = require "stm"
 
-local ACTIVE = "active"
+local ACTIVE  = "active"
+local task_size = 5000
 
-PrintMessageSTM = StateMachine:new()
+local function simple_task()
+	for i=1,task_size do
+		q = i*i
+	end
+end
 
-PrintMessageSTM.events = {
-	PRINT = 1,
+
+STMSimpleTask = StateMachine:new()
+
+STMSimpleTask.events = {
+	RUN_TASK = 1,
 }
 
-function PrintMessageSTM:new(id, scheduler)
+function STMSimpleTask:new(id, scheduler)
 	local o = {}
-	setmetatable(o, { __index = self})
+	setmetatable(o, { __index = self })
 	o.data = {}
 	o.data.id = id
 	o.data.current_state = ACTIVE
@@ -21,27 +27,27 @@ function PrintMessageSTM:new(id, scheduler)
 	return o
 end
 
-function PrintMessageSTM:fire()
+function STMSimpleTask:fire()
 	while(true) do
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
 
-		if event:type() == StateMachine.TERMINATE_SELF then
+		if event:type() == self.TERMINATE_SELF then
 			break
 
 		elseif current_state == ACTIVE then
-			if event:type() == self.events.PRINT then
-				print(tostring(event:get_data()))
+			if event:type() == self.events.RUN_TASK then
+				simple_task()
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-			
+
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
-			end
-		
+
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end
 	end
+
 end
 
-return PrintMessageSTM
+return STMSimpleTask

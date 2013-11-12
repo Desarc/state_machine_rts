@@ -1,4 +1,4 @@
-require "stm"
+StateMachine = require "stm"
 
 local COUNTING = "counting"
 
@@ -8,11 +8,10 @@ STMCounter.events = {
 	COUNT = 1,
 	RESET = 2,
 	PRINT = 3,
-	EXIT = 4,
 }
 
 function STMCounter:new(id, scheduler)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
 	o.data.id = id
@@ -45,8 +44,8 @@ function STMCounter:fire()
 				print("Total count is now "..tostring(self.count))
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
-			elseif event:type() == self.events.EXIT then
-				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
 		else

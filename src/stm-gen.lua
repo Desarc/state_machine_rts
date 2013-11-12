@@ -1,44 +1,41 @@
-StateMachine = require "state_machine"
+StateMachine = require "stm"
 Timer = require "timer"
 Event = require "event"
+STMSimpleTask = require "stm-task"
 
-local ACTIVE, IDLE = "Active", "Idle"
-local TIMEOUT_TIME = 5000000
+local INACTIVE, ACTIVE  = "inactive", "active"
+local EVENT_INTERVAL = 10000
 
+STMEventGenerator = StateMachine:new()
 
-PeriodicTimer = StateMachine:new()
-
-PeriodicTimer.events = {
+STMEventGenerator.events = {
 	START = 1,
 	STOP = 2,
-	TIMEOUT = 3,
+	GENERATE = 3,
 }
 
-function PeriodicTimer:new(id, scheduler)
+function STMEventGenerator:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
 	o.data.id = id
-	o.data.current_state = IDLE
+	o.data.current_state = INACTIVE
 	o.scheduler = scheduler
 	scheduler:add_state_machine(o)
 	return o
 end
 
-function PeriodicTimer:timer_start()
-	print("Timer started.")
-	local event = Event:new(self:id(), self.events.TIMEOUT)
-	self.scheduler:add_timer(Timer:new(TIMEOUT_TIME, self:id(), event))
+function STMEventGenerator:schedule_self()
+	local event = Event:new(self:id(), self.events.GENERATE)
+	self.scheduler:add_timer(Timer:new(self:id(), EVENT_INTERVAL, event)
 end
 
-
-function PeriodicTimer:tick()
-	print("Tick!")
-	local event = Event:new(self:id(), self.events.TIMEOUT)
-	self.scheduler:add_timer(Timer:new(TIMEOUT_TIME, self:id(), event))
+function STMEventGenerator:schedule_event()
+	local event = Event:new("stm_st1", STMSimpleTask.events.RUN_TASK)
+	self.scheduler:add_to_queue(event)
 end
 
-function PeriodicTimer:fire()
+function STMEventGenerator:fire()
 	while(true) do
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
@@ -46,30 +43,30 @@ function PeriodicTimer:fire()
 		if event:type() == self.TERMINATE_SELF then
 			break
 
-		elseif current_state == IDLE then
-
+		elseif current_state == INACTIVE then
 			if event:type() == self.events.START then
-				self:timer_start()
+				self:schedule_self()
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
-			else
-				coroutine.yield(StateMachine.DISCARD_EVENT)
-			end
-		
-		elseif current_state == ACTIVE then
 			
-			if event:type() == self.events.TIMEOUT then
-				self:tick()
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
-			elseif event:type() == self.events.STOP then
-				print("Stopping timer.")
-				self:set_state(IDLE)
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
+				
+			end
+
+		elseif current_state == ACTIVE then
+			if event:type() == self.events.RUN_TASK then
+				self:schedule_self()
+				self:schedule_event()
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			
+			elseif event:type() == self.events.STOP then
+				self:set_state(INACTIVE)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
+
 			end
 
 		else
@@ -79,4 +76,4 @@ function PeriodicTimer:fire()
 
 end
 
-return TrafficLightController
+return STMEventGenerator

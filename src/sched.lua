@@ -71,7 +71,7 @@ function Scheduler:set_active_event(event)
 end
 
 function Scheduler:get_active_event()
-	event = self.active_event
+	local event = self.active_event
 	self.active_event = nil
 	return event
 end
@@ -89,11 +89,12 @@ function Scheduler:run()
 	-- TODO: passive waiting if no events/timers?
 	local success, status, state_machine
 	local start = self.time()
+	local RUN_TIME = 30000000
 
 	while(true) do
 		
 		
-		if start+30000000 < self.time() then -- terminate after 30 sec
+		if start+RUN_TIME < self.time() then -- terminate after RUN_TIME
 			print("Ran for 30 sec, terminating...")
 			break
 		end
@@ -133,7 +134,7 @@ end
 
 
 function Scheduler:new()
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.state_machine_list = {}
 	o.event_queue = {}

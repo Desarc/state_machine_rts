@@ -1,10 +1,6 @@
---require "state_machine"
---require "timer"
---require "event"
-
-StateMachine = dofile("/wo/state_machine.lua")
-Timer = dofile("/wo/timer.lua")
-Event = dofile("/wo/event.lua")
+StateMachine = require "state_machine"
+Timer = require "timer"
+Event = require "event"
 
 local S0, S1, S2, S3, S4, S5 = "S0", "S1", "S2", "S3", "S4", "S5"
 local YELLOW_DELAY = 3000000
@@ -57,7 +53,7 @@ TrafficLightController.events = {
 }
 
 function TrafficLightController:new(id, scheduler)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self})
 	o.data = {}
 	o.data.id = id
@@ -69,61 +65,80 @@ end
 
 function TrafficLightController:fire()
 	while(true) do
-		event = self.scheduler:get_active_event()
+		local event = self.scheduler:get_active_event()
+		local current_state = self:get_state()
 
 		if event:type() == self.TERMINATE_SELF then
 			break
 
-		elseif self.data.current_state == S0 then
+		elseif current_state == S0 then
 			if event:type() == self.events.PEDESTRIAN_BUTTON_PRESSED then
 				cars_show_yellow()
-				local event = Event:new(self.data.id, self.events.YELLOW_TIMER_EXPIRED)
-				self.scheduler:add_timer(Timer:new(self.scheduler.time()+YELLOW_DELAY, self.data.id, event))
-				self.data.current_state = S1
+				local new_event = Event:new(self:id(), self.events.YELLOW_TIMER_EXPIRED)
+				self.scheduler:add_timer(Timer:new(YELLOW_DELAY, self:id(), new_event))
+				self:set_state(S1)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 		
-		elseif self.data.current_state == S1 then
+		elseif current_state == S1 then
 			if event:type() == self.events.YELLOW_TIMER_EXPIRED then
 				cars_show_red()
-				local event = Event:new(self.data.id, self.events.PEDESTRIANS_GO)
-				self.scheduler:add_timer(Timer:new(self.scheduler.time()+SAFE_TIME, self.data.id, event))
-				self.data.current_state = S2
+				local new_event = Event:new(self:id(), self.events.PEDESTRIANS_GO)
+				self.scheduler:add_timer(Timer:new(SAFE_TIME, self:id(), new_event))
+				self.set_state(S2)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
-		elseif self.data.current_state == S2 then
+		elseif current_state == S2 then
 			if event:type() == self.events.PEDESTRIANS_GO then
 				peds_show_green()
-				local event = Event:new(self.data.id, self.events.PEDESTRIAN_TIMER_EXPIRED)
-				self.scheduler:add_timer(Timer:new(self.scheduler.time()+PEDESTRIAN_TIME, self.data.id, event))
-				self.data.current_state = S3
+				local new_event = Event:new(self:id(), self.events.PEDESTRIAN_TIMER_EXPIRED)
+				self.scheduler:add_timer(Timer:new(PEDESTRIAN_TIME, self:id(), new_event))
+				self:set_state(S3)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
-		elseif self.data.current_state == S3 then
+		elseif current_state == S3 then
 			if event:type() == self.events.PEDESTRIAN_TIMER_EXPIRED then
 				peds_show_red()
-				local event = Event:new(self.data.id, self.events.CARS_GO)
-				self.scheduler:add_timer(Timer:new(self.scheduler.time()+SAFE_TIME, self.data.id, event))
-				self.data.current_state = S4
+				local new_event = Event:new(self:id(), self.events.CARS_GO)
+				self.scheduler:add_timer(Timer:new(SAFE_TIME, self:id(), new_event))
+				self:set_state(S4)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
-		elseif self.data.current_state == S4 then
+		elseif current_state == S4 then
 			if event:type() == self.events.CARS_GO then
 				cars_show_yellow()
-				local event = Event:new(self.data.id, self.events.YELLOW_TIMER_EXPIRED)
-				self.scheduler:add_timer(Timer:new(self.scheduler.time()+YELLOW_DELAY, self.data.id, event))
-				self.data.current_state = S5
+				local new_event = Event:new(self:id(), self.events.YELLOW_TIMER_EXPIRED)
+				self.scheduler:add_timer(Timer:new(YELLOW_DELAY, self:id(), new_event))
+				self:set_state(S5)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
-		elseif self.data.current_state == S5 then
+		elseif current_state == S5 then
 			if event:type() == self.events.YELLOW_TIMER_EXPIRED then
 				cars_show_green()
-				self.data.current_state = S0
+				self:set_state(S0)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+			
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
 		else

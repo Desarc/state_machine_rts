@@ -1,10 +1,11 @@
-require "stm"
-require "timer"
-require "event"
-require "msg"
+StateMachine = require "stm"
+Timer = require "timer"
+Event = require "event"
+Message = require "msg"
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
-local RECEIVE_DELAY = 500000
+local RECEIVE_INTERVAL = 500000
+local RECEIVE_TIMEOUT = 10000
 
 STMExternalConnection = StateMachine:new()
 
@@ -52,7 +53,7 @@ end
 function STMExternalConnection:send_external(message)
 	local out_data = message:serialize()
 	print("Sending data...")
-	res, err = net.send(self.socket, out_data)
+	local res, err = net.send(self.socket, out_data)
 	if err ~= 0 then
 		return res, err
 	end
@@ -60,17 +61,10 @@ end
 
 
 function STMExternalConnection:receive_external()
-	--print("Reading socket...")
-	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, 10000)
-	--print("data: "..tostring(data)..", err: "..tostring(err))
+	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, RECEIVE_TIMEOUT)
 	if err ~= 0 then
-		--self.print_error(err)
 		return err
 	elseif data ~= 0 then
-		--print("External message received!")
-		if data == "terminate" then
-			return data
-		end
 		local message = Message.deserialize(data)
 		local event = message:generate_event()
 		if event then
@@ -83,11 +77,11 @@ end
 
 function STMExternalConnection:schedule_receive()
 	local event = Event:new(self:id(), self.events.RECEIVE_MESSAGE)
-	self.scheduler:add_timer(Timer:new(RECEIVE_DELAY, self:id(), event))
+	self.scheduler:add_timer(Timer:new(RECEIVE_INTERVAL, self:id(), event))
 end
 
 function STMExternalConnection:new(id, scheduler)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self})
 	o.data = {}
 	o.data.id = id
@@ -132,7 +126,7 @@ function STMExternalConnection:fire()
 
 			elseif event:type() == self.events.SEND_MESSAGE then
 				local message = event:get_data()
-				res, err = self:send_external(message)
+				local res, err = self:send_external(message)
 				if err then
 					print("Sending error: "..res..", terminating system...")
 					self.print_error(err)
@@ -140,14 +134,13 @@ function STMExternalConnection:fire()
 				
 				else
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-				
 				end
 
 			elseif event:type() == self.events.RECEIVE_MESSAGE then
 				local err = self:receive_external()
 				if err == net.ERR_CLOSED or err == net.ERR_ABORTED then
 					print("Connection closed.")
-					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely
+					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely by closing connection
 				
 				else
 					self:schedule_receive()

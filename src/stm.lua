@@ -78,11 +78,9 @@ end
 
 --]]
 function StateMachine:new()
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	return o
 end
-
-
 
 return StateMachine

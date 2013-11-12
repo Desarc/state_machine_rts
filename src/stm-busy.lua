@@ -1,4 +1,4 @@
-require "stm"
+StateMachine = require "stm"
 
 local WORKING  = "working"
 local task_size = 50000
@@ -11,16 +11,14 @@ local function busy_work()
 	end
 end
 
-
 STMBusyWork = StateMachine:new()
 
 STMBusyWork.events = {
 	DO_WORK = 1,
-	EXIT = 4,
 }
 
 function STMBusyWork:new(id, scheduler)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
 	o.data.id = id
@@ -34,7 +32,7 @@ function STMBusyWork:new(id, scheduler)
 end
 
 function STMBusyWork:schedule_self()
-	local event = Event:new(self.data.id, self.events.DO_WORK)
+	local event = Event:new(self:id(), self.events.DO_WORK)
 	self.scheduler:add_to_queue(event)
 end
 
@@ -53,6 +51,7 @@ function STMBusyWork:fire()
 					self.repeat_count = self.repeat_count + 1
 					self:schedule_self()
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
 				else
 					self.run_count = self.run_count + 1
 					local delta = self.scheduler.time() - self.start
@@ -62,20 +61,17 @@ function STMBusyWork:fire()
 						self:schedule_self()
 						self.start = self.scheduler.time()
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+
 					else
 						coroutine.yield(StateMachine.TERMINATE_SYSTEM)
 					end
 				end
 
-			elseif event:type() == self.events.EXIT then
-				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
-			end
-
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)
+
 		end
 	end
-
 end
 
 return STMBusyWork

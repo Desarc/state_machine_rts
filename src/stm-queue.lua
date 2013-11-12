@@ -1,6 +1,6 @@
-require "stm"
-require "timer"
-require "event"
+StateMachine = require "stm"
+Timer = require "timer"
+Event = require "event"
 
 local ACTIVE, IDLE = "active", "idle"
 local MEASURE_INTERVAL = 100000
@@ -12,12 +12,11 @@ STMQueueLength.events = {
 	STOP = 2,
 	MEASURE = 3,
 	SEND_DATA = 4,
-	EXIT = 5,
 }
 
 function STMQueueLength:schedule_measure()
-	local event = Event:new(self.data.id, self.events.MEASURE)
-	self.scheduler:add_timer(Timer:new(MEASURE_INTERVAL, self.data.id, event))
+	local event = Event:new(self:id(), self.events.MEASURE)
+	self.scheduler:add_timer(Timer:new(MEASURE_INTERVAL, self:id(), event))
 end
 
 function STMQueueLength:measure()
@@ -38,7 +37,7 @@ function STMQueueLength:send_data()
 end
 
 function STMQueueLength:new(id, scheduler)
-	o = {}
+	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {}
 	o.data.id = id
@@ -64,8 +63,8 @@ function STMQueueLength:fire()
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
-			elseif event:type() == self.events.EXIT then
-				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 		
 		elseif current_state == ACTIVE then
@@ -83,16 +82,14 @@ function STMQueueLength:fire()
 				self:set_state(IDLE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
-			elseif event:type() == self.events.EXIT then
-				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
-
+			else
+				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end
 	end
-
 end
 
 return STMQueueLength

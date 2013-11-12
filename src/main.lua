@@ -1,11 +1,11 @@
 package.path = "/wo/?.lua;"..package.path
 
-require "sched"
-require "event"
---require "stm-busy"
-require "stm-conn"
-require "stm-queue"
---require "stm-count"
+Scheduler = require "sched"
+Event = require "event"
+--STMBusyWork = require "stm-busy"
+STMExternalConnection = require "stm-conn"
+STMQueueLength = require "stm-queue"
+--STMCounter = require "stm-count"
 
 local scheduler = Scheduler:new()
 
