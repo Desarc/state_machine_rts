@@ -84,11 +84,7 @@ function STMTcpSocket:fire()
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
 
-		if event:type() == self.TERMINATE_SELF then
-			self.client:close()
-			break
-
-		elseif current_state == DISCONNECTED then
+		if current_state == DISCONNECTED then
 			
 			if event:type() == self.events.CONNECT then
 				self:create_socket()

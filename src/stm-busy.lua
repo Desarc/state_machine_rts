@@ -41,10 +41,7 @@ function STMBusyWork:fire()
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
 
-		if event:type() == self.TERMINATE_SELF then
-			break
-
-		elseif current_state == WORKING then
+		if current_state == WORKING then
 			if event:type() == self.events.DO_WORK then
 				if self.repeat_count < task_repeats then
 					busy_work()

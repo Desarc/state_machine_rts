@@ -12,6 +12,10 @@ function Event:get_data()
 	return self.data.user_data
 end
 
+function Event:set_data(data)
+	self.data.user_data = data
+end
+
 function Event:to_string()
 	return tostring(self:state_machine_id()).."\n"..tostring(self:type()).."\n"..tostring(self:get_data()).."\n"
 end

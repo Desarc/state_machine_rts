@@ -20,10 +20,9 @@ function Timer.time()
 	return tmr.read(tmr.SYS_TIMER)
 end
 
-function Timer:new(expires, state_machine_id, event)
+function Timer:new(id, expires, state_machine_id, event)
 	local o = {}
 	setmetatable(o, { __index = self })
-	local id = state_machine_id .. expires
 	o.data = {id = id, expires = self.time()+expires, state_machine_id = state_machine_id, event = event}
 	return o
 end

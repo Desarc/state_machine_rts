@@ -32,10 +32,7 @@ function STMSimpleTask:fire()
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
 
-		if event:type() == self.TERMINATE_SELF then
-			break
-
-		elseif current_state == ACTIVE then
+		if current_state == ACTIVE then
 			if event:type() == self.events.RUN_TASK then
 				simple_task()
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)

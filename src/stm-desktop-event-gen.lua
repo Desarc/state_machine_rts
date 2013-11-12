@@ -46,10 +46,7 @@ function STMEventGenerator:fire()
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
 
-		if event:type() == self.TERMINATE_SELF then
-			break
-
-		elseif current_state == IDLE then
+		if current_state == IDLE then
 			
 			if event:type() == self.events.START then
 				print("Event generator started!")

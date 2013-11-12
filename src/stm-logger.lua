@@ -36,11 +36,7 @@ function STMLogger:fire()
 		local event = self.scheduler:get_active_event()
 		local current_state = self:get_state()
 
-		if event:type() == self.TERMINATE_SELF then
-			self.logger:close()
-			break
-
-		elseif current_state == INACTIVE then
+		if current_state == INACTIVE then
 			if event:type() == self.events.START then
 				self:open(event:get_data())
 				self:set_state(ACTIVE)
