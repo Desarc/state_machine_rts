@@ -1,4 +1,20 @@
+local DESKTOP_TIMEOUT = 10e10
+local CONTROLLER_TIMEOUT = 30000000
+
 Scheduler = {}
+
+Scheduler.type = {
+	DESKTOP = 1,
+	CONTROLLER = 2,
+}
+
+local function controller_time()
+	return tmr.read(tmr.SYS_TIMER)
+end
+
+local function desktop_time()
+	return os.time()
+end
 
 function Scheduler:add_state_machine(state_machine)
 	-- create a coroutine to resume when calling <state_machine>.run()
@@ -84,17 +100,32 @@ function Scheduler:check_active()
 	end
 end
 
+function Scheduler:new(system_type)
+	local o = {}
+	setmetatable(o, { __index = self })
+	o.state_machine_list = {}
+	o.event_queue = {}
+	o.timers = {}
+	if system_type == self.type.DESKTOP then
+		o.time = desktop_time
+		o.timeout = DESKTOP_TIMEOUT
+	else if system_type == self.type.CONTROLLER then
+		o.time = controller_time
+		o.timeout = CONTROLLER_TIMEOUT
+	end
+	return o
+end
+
 function Scheduler:run()
 	print("Scheduler running.")
 	-- TODO: passive waiting if no events/timers?
 	local success, status, state_machine
 	local start = self.time()
-	local RUN_TIME = 30000000
 
 	while(true) do
 		
 		
-		if start+RUN_TIME < self.time() then -- terminate after RUN_TIME
+		if start+self.timeout < self.time() then -- terminate after timeout
 			print("Ran for 30 sec, terminating...")
 			break
 		end
@@ -131,16 +162,5 @@ function Scheduler:run()
 	end
 	print("Terminating system...")
 end
-
-
-function Scheduler:new()
-	local o = {}
-	setmetatable(o, { __index = self })
-	o.state_machine_list = {}
-	o.event_queue = {}
-	o.timers = {}
-	return o
-end
-
 
 return Scheduler

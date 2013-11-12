@@ -7,7 +7,7 @@ STMExternalConnection = require "stm-conn"
 STMQueueLength = require "stm-queue"
 --STMCounter = require "stm-count"
 
-local scheduler = Scheduler:new()
+local scheduler = Scheduler:new(Scheduler.type.CONTROLLER)
 
 --local stm_tlc001 = TrafficLightController:new("stm_tlc001", scheduler)
 
