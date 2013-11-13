@@ -6,11 +6,9 @@ StateMachine = {
 	TERMINATE_SYSTEM = 2,
 }
 
--- StateMachine.run()
--- this function should be replaced by a coroutine created by the scheduler.
-function StateMachine.run()
-	error("No coroutine created for this state machine!")
-end
+-- StateMachine.run
+-- this field should be replaced by a coroutine created by the scheduler.
+StateMachine.run = nil
 
 -- StateMachine:fire()
 -- this is the function called by the coroutine, and should implement all transitions specified for the state machine.
@@ -48,21 +46,27 @@ function StateMachine:new()
 	local o = {}
 	setmetatable(o, { __index = self })
 	local data = {state = nil, id = nil} -- will be set upon instantiation of subclass
+
 	o.state = function ()
 		return data.state
 	end
+
 	o.set_state = function (state)
 		data.state = state
 	end
+
 	o.set_id = function (id)
 		data.id = id
 	end
+
 	o.id = function ()
 		return data.id
 	end
+
 	o.to_string = function()
 		return tostring(data.id)..": "..tostring(data.state)
 	end
+
 	return o
 end
 

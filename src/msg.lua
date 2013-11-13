@@ -3,7 +3,7 @@ Event = require "event"
 Message = {}
 
 function Message.deserialize(content)
-	local message = Message:new{}
+	local message = Message:new({})
 	local done = false
 	local delim1, delim2, key, value = 0, 0
 	while(not done) do
@@ -41,7 +41,7 @@ function Message:new(variables)
 		return data[key]
 	end
 
-	o.add_data(key, value)
+	o.add_data = function (key, value)
 		data[key] = value
 	end
 

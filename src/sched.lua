@@ -20,11 +20,6 @@ local function timers_cmp(t1, t2)
 	if t1.expires() < t2.expires() then return true end
 end
 
-function Scheduler:check_active()
-	if table.getn(self.timers) > 0 or table.getn(self.event_queue) > 0 then return true
-	else return false end
-end
-
 function Scheduler:new(system_type)
 	local o = {}
 	setmetatable(o, { __index = self })
