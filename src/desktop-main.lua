@@ -19,15 +19,15 @@ local scheduler = Scheduler:new(Scheduler.type.DESKTOP)
 
 --local stm_bw1 = STMBusyWork:new("stm_bw1", scheduler)
 
-local stm_tl1 = STMTrafficLight:new("stm_tl1", scheduler)
+--local stm_tl1 = STMTrafficLight:new("stm_tl1", scheduler)
 
---local stm_pt1 = STMPeriodicTimer:new("stm_pt1", scheduler)
+local stm_pt1 = STMPeriodicTimer:new("stm_pt1", scheduler)
 
 --local event1 = Event:new(stm_eg1:id(), STMEventGenerator.events.START)
 
-local event1 = Event:new(stm_tl1:id(), STMTrafficLight.events.PEDESTRIAN_BUTTON_PRESSED)
+--local event1 = Event:new(stm_tl1.id(), STMTrafficLight.events.PEDESTRIAN_BUTTON_PRESSED)
 
---local event1 = Event:new(stm_pt1:id(), STMPeriodicTimer.events.START)
+local event1 = Event:new(stm_pt1:id(), STMPeriodicTimer.events.START)
 
 --local event2 = Event:new(stm_l1:id(), STMLogger.events.START, "queue.txt")
 
@@ -35,5 +35,5 @@ local event1 = Event:new(stm_tl1:id(), STMTrafficLight.events.PEDESTRIAN_BUTTON_
 
 --scheduler:add_to_queue(event2)
 --scheduler:add_to_queue(event5)
-scheduler:add_to_queue(event1)
+scheduler.add_event(event1)
 scheduler:run()	

@@ -2,30 +2,23 @@ Timer = {
 	BASE = 1000, -- number of time units for 1ms
 }
 
-function Timer:expires()
-	return self.data.expires
-end
-
-function Timer:state_machine_id()
-	return self.data.state_machine_id
-end
-
-function Timer:event()
-	return self.data.event
-end
-
-function Timer:id()
-	return self.data.id
-end
-
 function Timer.time()
 	return tmr.read(tmr.SYS_TIMER)
 end
 
-function Timer:new(id, expires, state_machine_id, event)
+function Timer:new(id, expires, event)
 	local o = {}
 	setmetatable(o, { __index = self })
-	o.data = {id = id, expires = self.time()+expires, state_machine_id = state_machine_id, event = event}
+	o.data = {id = id, expires = self.time()+expires, event = event}
+	o.id = function ()
+		return data.id
+	end
+	o.expires = function ()
+		return data.expires
+	end
+	o.event = function ()
+		return data.event
+	end
 	return o
 end
 
