@@ -52,7 +52,7 @@ end
 
 
 function STMExternalConnection:send_external(message)
-	local out_data = message:serialize()
+	local out_data = message.serialize()
 	print("Sending data...")
 	local res, err = net.send(self.socket, out_data)
 	if err ~= 0 then
@@ -67,43 +67,46 @@ function STMExternalConnection:receive_external()
 		return err
 	elseif data ~= 0 then
 		local message = Message.deserialize(data)
-		local event = message:generate_event()
+		local event = message.generate_event()
 		if event then
 			print("Received data request!")
-			self.scheduler:add_to_queue(event)
+			self.scheduler().add_event(event)
 		end
 	end
 	return false
 end
 
 function STMExternalConnection:schedule_receive(timer_no)
-	local event = Event:new(self:id(), self.events.RECEIVE_MESSAGE)
-	local timer = Timer:new(self:id()..timer_no, RECEIVE_INTERVAL, self:id(), event)
-	event:set_timer_id(timer_no)
-	self.scheduler:add_timer(timer)
+	local event = Event:new(self.id(), self.events.RECEIVE_MESSAGE)
+	local timer = Timer:new(self.id()..timer_no, RECEIVE_INTERVAL, event)
+	event.set_timer_id(timer_no)
+	self.scheduler().add_timer(timer)
 end
 
 function STMExternalConnection:new(id, scheduler)
 	local o = {}
-	setmetatable(o, { __index = self})
-	o.data = {}
-	o.data.id = id
-	o.data.current_state = DISCONNECTED
-	o.scheduler = scheduler
-	scheduler:add_state_machine(o)
+	setmetatable(o, { __index = self })
+	local sched = scheduler
+	o.set_id(id)
+	o.set_id = function () error("Function not accessible.") end
+	o.set_state(DISCONNECTED)
+	o.scheduler = function ()
+		return sched
+	end
+	scheduler.add_state_machine(o)
 	return o
 end
 
 function STMExternalConnection:fire()
 	while(true) do
-		local event = self.scheduler:get_active_event()
-		local current_state = self:get_state()
+		local event = self.scheduler().get_active_event()
+		local current_state = self.get_state()
 
 		if current_state == DISCONNECTED then
 			
-			if event:type() == self.events.CONNECT then
+			if event.type() == self.events.CONNECT then
 				if self:connect_external() then
-					self:set_state(CONNECTED)
+					self.set_state(CONNECTED)
 					self:schedule_receive(T1)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				
@@ -117,13 +120,13 @@ function STMExternalConnection:fire()
 
 		elseif current_state == CONNECTED then
 			
-			if event:type() == self.events.DISCONNECT then
+			if event.type() == self.events.DISCONNECT then
 				self:disconnect_external()
-				self:set_state(DISCONNECTED)
+				self.set_state(DISCONNECTED)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
-			elseif event:type() == self.events.SEND_MESSAGE then
-				local message = event:get_data()
+			elseif event.type() == self.events.SEND_MESSAGE then
+				local message = event.user_data()
 				local res, err = self:send_external(message)
 				if err then
 					print("Sending error: "..res..", terminating system...")
@@ -134,7 +137,7 @@ function STMExternalConnection:fire()
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				end
 
-			elseif event:type() == self.events.RECEIVE_MESSAGE then
+			elseif event.type() == self.events.RECEIVE_MESSAGE then
 				local err = self:receive_external()
 				if err == net.ERR_CLOSED or err == net.ERR_ABORTED then
 					print("Connection closed.")

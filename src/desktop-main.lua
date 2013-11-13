@@ -23,17 +23,17 @@ local scheduler = Scheduler:new(Scheduler.type.DESKTOP)
 
 local stm_pt1 = STMPeriodicTimer:new("stm_pt1", scheduler)
 
---local event1 = Event:new(stm_eg1:id(), STMEventGenerator.events.START)
+--local event1 = Event:new(stm_eg1.id(), STMEventGenerator.events.START)
 
 --local event1 = Event:new(stm_tl1.id(), STMTrafficLight.events.PEDESTRIAN_BUTTON_PRESSED)
 
-local event1 = Event:new(stm_pt1:id(), STMPeriodicTimer.events.START)
+local event1 = Event:new(stm_pt1.id(), STMPeriodicTimer.events.START)
 
---local event2 = Event:new(stm_l1:id(), STMLogger.events.START, "queue.txt")
+--local event2 = Event:new(stm_l1.id(), STMLogger.events.START, "queue.txt")
 
---local event5 = Event:new(stm_ts1:id(), STMTcpSocket.events.CONNECT)
+--local event5 = Event:new(stm_ts1.id(), STMTcpSocket.events.CONNECT)
 
---scheduler:add_to_queue(event2)
---scheduler:add_to_queue(event5)
+--scheduler.add_to_queue(event2)
+--scheduler.add_to_queue(event5)
 scheduler.add_event(event1)
 scheduler:run()	

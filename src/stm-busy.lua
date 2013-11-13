@@ -20,29 +20,32 @@ STMBusyWork.events = {
 function STMBusyWork:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
-	o.data = {}
-	o.data.id = id
-	o.data.current_state = WORKING
-	o.scheduler = scheduler
+	local sched = scheduler
+	o.set_id(id)
+	o.set_id = function () error("Function not accessible.") end
+	o.set_state(WORKING)
+	o.scheduler = function ()
+		return sched
+	end
 	o.repeat_count = 0
 	o.run_count = 0
 	o.start = scheduler.time()
-	scheduler:add_state_machine(o)
+	scheduler.add_state_machine(o)
 	return o
 end
 
 function STMBusyWork:schedule_self()
-	local event = Event:new(self:id(), self.events.DO_WORK)
-	self.scheduler:add_to_queue(event)
+	local event = Event:new(self.id(), self.events.DO_WORK)
+	self.scheduler().add_event(event)
 end
 
 function STMBusyWork:fire()
 	while(true) do
-		local event = self.scheduler:get_active_event()
-		local current_state = self:get_state()
+		local event = self.scheduler().get_active_event()
+		local current_state = self.get_state()
 
 		if current_state == WORKING then
-			if event:type() == self.events.DO_WORK then
+			if event.type() == self.events.DO_WORK then
 				if self.repeat_count < task_repeats then
 					busy_work()
 					self.repeat_count = self.repeat_count + 1
@@ -51,12 +54,12 @@ function STMBusyWork:fire()
 
 				else
 					self.run_count = self.run_count + 1
-					local delta = self.scheduler.time() - self.start
+					local delta = self.scheduler().time() - self.start
 					print("Delta: "..tostring(delta))
 					if self.run_count < runs then
 						self.repeat_count = 0
 						self:schedule_self()
-						self.start = self.scheduler.time()
+						self.start = self.scheduler().time()
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 					else
