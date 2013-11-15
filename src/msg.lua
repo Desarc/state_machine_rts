@@ -1,6 +1,6 @@
-Event = require "event"
+local Event = require "event"
 
-Message = {}
+local Message = {}
 
 function Message.deserialize(content)
 	local message = Message:new({})

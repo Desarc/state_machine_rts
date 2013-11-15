@@ -1,9 +1,9 @@
-StateMachine = require "stm"
-Logger = require "logger"
+local StateMachine = require "stm"
+local Logger = require "logger"
 
 local INACTIVE, ACTIVE = "active", "inactive"
 
-STMLogger = StateMachine:new()
+local STMLogger = StateMachine:new()
 
 STMLogger.events = {
 	START = 1,
@@ -41,7 +41,7 @@ end
 function STMLogger:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == INACTIVE then
 			if event.type() == self.events.START then

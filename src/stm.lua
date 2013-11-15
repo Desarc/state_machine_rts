@@ -1,6 +1,6 @@
 -- the base StateMachine table (object).
 -- the defined constants are general status messages valid for any state machine.
-StateMachine = {
+local StateMachine = {
 	EXECUTE_TRANSITION = 0,
 	DISCARD_EVENT = 1,
 	TERMINATE_SYSTEM = 2,

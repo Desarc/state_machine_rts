@@ -1,8 +1,8 @@
-StateMachine = require "stm"
+local StateMachine = require "stm"
 
 local COUNTING = "counting"
 
-STMCounter = StateMachine:new()
+local STMCounter = StateMachine:new()
 
 STMCounter.events = {
 	COUNT = 1,
@@ -28,7 +28,7 @@ end
 function STMCounter:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == COUNTING then
 			if event.type() == self.events.COUNT then

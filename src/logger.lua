@@ -1,4 +1,4 @@
-Logger = {}
+local Logger = {}
 
 function Logger:new(filename)
 	local o = {}
@@ -16,3 +16,5 @@ function Logger:new(filename)
 
 	return o
 end
+
+return Logger

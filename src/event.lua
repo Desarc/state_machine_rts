@@ -1,4 +1,4 @@
-Event = {}
+local Event = {}
 
 function Event:new(state_machine_id, event_type, user_data)
 	local o = {}

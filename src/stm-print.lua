@@ -1,10 +1,10 @@
-StateMachine = require "state_machine"
-Timer = require "timer"
-Event = require "event"
+local StateMachine = require "state_machine"
+local Timer = require "timer"
+local Event = require "event"
 
 local ACTIVE = "active"
 
-PrintMessageSTM = StateMachine:new()
+local PrintMessageSTM = StateMachine:new()
 
 PrintMessageSTM.events = {
 	PRINT = 1,
@@ -27,7 +27,7 @@ end
 function PrintMessageSTM:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == ACTIVE then
 			if event.type() == self.events.PRINT then

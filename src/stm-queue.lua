@@ -1,16 +1,16 @@
-StateMachine = require "stm"
-Timer = require "timer"
-Event = require "event"
-STMExternalConnection = require "stm-conn"
-STMLogger = require "stm-logger"
+local StateMachine = require "stm"
+local Timer = require "timer"
+local Event = require "event"
+local STMExternalConnection = require "stm-conn"
 
 local ACTIVE, IDLE = "active", "idle"
 local T1 = "t1"
 local MEASURE_INTERVAL = 100*Timer.BASE
 local CONN_ID = "stm_ec1"
 local ASSOCIATE_ID = "stm_l1"
+local ASSOCIATE_EVENT = 2 -- STMLogger.events.LOG
 
-STMQueueLength = StateMachine:new()
+local STMQueueLength = StateMachine:new()
 
 STMQueueLength.events = {
 	START = 1,
@@ -38,7 +38,7 @@ function STMQueueLength:send_data()
 		data = data..tostring(v).." "
 	end
 	self.measurements = {}
-	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = STMLogger.events.LOG, user_data = data})
+	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = data})
 	local event = Event:new(CONN_ID, STMExternalConnection.events.SEND_MESSAGE, message)
 	self.scheduler().add_to_queue(event)
 end
@@ -61,7 +61,7 @@ end
 function STMQueueLength:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == IDLE then
 			if event.type() == self.events.START then

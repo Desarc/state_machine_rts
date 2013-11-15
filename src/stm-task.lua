@@ -1,4 +1,4 @@
-StateMachine = require "stm"
+local StateMachine = require "stm"
 
 local ACTIVE  = "active"
 local task_size = 5000
@@ -10,7 +10,7 @@ local function simple_task()
 end
 
 
-STMSimpleTask = StateMachine:new()
+local STMSimpleTask = StateMachine:new()
 
 STMSimpleTask.events = {
 	RUN_TASK = 1,
@@ -33,7 +33,7 @@ end
 function STMSimpleTask:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == ACTIVE then
 			if event.type() == self.events.RUN_TASK then
@@ -42,6 +42,7 @@ function STMSimpleTask:fire()
 
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
+			end
 
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)

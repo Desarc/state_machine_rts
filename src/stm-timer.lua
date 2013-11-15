@@ -1,12 +1,12 @@
-StateMachine = require "stm"
-Timer = require "desktop-timer"
-Event = require "event"
+local StateMachine = require "stm"
+local Timer = require "desktop-timer"
+local Event = require "event"
 
 local ACTIVE, IDLE = "Active", "Idle"
 local T1 = "t1"
 local TIMEOUT_TIME = 1000*Timer.BASE
 
-STMPeriodicTimer = StateMachine:new()
+local STMPeriodicTimer = StateMachine:new()
 
 STMPeriodicTimer.events = {
 	START = 1,

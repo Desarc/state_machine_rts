@@ -1,14 +1,14 @@
-StateMachine = require "stm"
-Timer = require "timer"
-Event = require "event"
-STMSimpleTask = require "stm-task"
+local StateMachine = require "stm"
+local Timer = require "timer"
+local Event = require "event"
+local STMSimpleTask = require "stm-task"
 
 local INACTIVE, ACTIVE  = "inactive", "active"
 local T1 = "t1"
-local EVENT_INTERVAL = 10*Timer.Base
+local EVENT_INTERVAL = 10*Timer.BASE
 local EVENT_TARGET = "stm_st1"
 
-STMEventGenerator = StateMachine:new()
+local STMEventGenerator = StateMachine:new()
 
 STMEventGenerator.events = {
 	START = 1,
@@ -33,7 +33,7 @@ end
 function STMEventGenerator:schedule_self(timer_no)
 	local event = Event:new(self.id(), self.events.GENERATE)
 	local timer = Timer:new(self.id()..timer_no, EVENT_INTERVAL, event)
-	event.add_timer_id(timer_no)
+	event.set_timer_id(timer_no)
 	self.scheduler().add_timer(timer)
 end
 
@@ -45,7 +45,7 @@ end
 function STMEventGenerator:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == INACTIVE then
 			if event.type() == self.events.START then

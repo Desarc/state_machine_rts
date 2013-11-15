@@ -1,14 +1,14 @@
-StateMachine = require "stm"
-Timer = require "timer"
-Event = require "event"
-Message = require "msg"
+local StateMachine = require "stm"
+local Timer = require "timer"
+local Event = require "event"
+local Message = require "msg"
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
 local T1 = "t1"
 local RECEIVE_INTERVAL = 500*Timer.BASE
 local RECEIVE_TIMEOUT = 10*Timer.BASE
 
-STMExternalConnection = StateMachine:new()
+local STMExternalConnection = StateMachine:new()
 
 STMExternalConnection.events = {
 	CONNECT = 1,
@@ -100,7 +100,7 @@ end
 function STMExternalConnection:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == DISCONNECTED then
 			
@@ -144,7 +144,7 @@ function STMExternalConnection:fire()
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely by closing connection
 				
 				else
-					self:schedule_receive()
+					self:schedule_receive(T1)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				end
 

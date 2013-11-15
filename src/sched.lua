@@ -1,7 +1,9 @@
+local StateMachine = require "stm"
+
 local DESKTOP_TIMEOUT = 10e10
 local CONTROLLER_TIMEOUT = 30000000
 
-Scheduler = {}
+local Scheduler = {}
 
 Scheduler.type = {
 	DESKTOP = 1,
@@ -112,10 +114,10 @@ function Scheduler:new(system_type)
 
 		while(true) do
 			
-			if start+timeout < self.time() then -- terminate after timeout
-				print("Ran for 30 sec, terminating...")
-				break
-			end
+			--if start+timeout < self.time() then -- terminate after timeout
+			--	print("Ran for 30 sec, terminating...")
+			--	break
+			--end
 			
 			local timer = self.check_timers()
 			if timer then

@@ -1,9 +1,9 @@
-StateMachine = require "stm"
-Timer = require "desktop-timer"
-Event = require "event"
-Message = require "msg"
-STMTcpSocket = require "stm-tcp"
-STMQueueLength = require "stm-queue"
+local StateMachine = require "stm"
+local Timer = require "desktop-timer"
+local Event = require "event"
+local Message = require "msg"
+local STMTcpSocket = require "stm-tcp"
+local STMQueueLength = require "stm-queue"
 
 local ACTIVE, IDLE = "active", "idle"
 local T1 = "t1"
@@ -11,7 +11,7 @@ local EVENT_INTERVAL = 1000*Timer.BASE
 local SOCKET_ID = "stm_ts1"
 local ASSOCIATE_ID = "stm_ql1"
 
-STMEventGenerator = StateMachine:new()
+local STMEventGenerator = StateMachine:new()
 
 STMEventGenerator.events = {
 	START = 1,
@@ -50,13 +50,13 @@ end
 function STMEventGenerator:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
-		local current_state = self.get_state()
+		local current_state = self.state()
 
 		if current_state == IDLE then
 			
 			if event.type() == self.events.START then
 				print("Event generator started!")
-				self:schedule_self()
+				self:schedule_self(T1)
 				self.set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
