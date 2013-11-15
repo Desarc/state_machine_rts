@@ -1,9 +1,9 @@
 local Timer = {
-	BASE = 1000, -- number of time units for 1ms
+	BASE = 0.001, -- number of time units for 1ms
 }
 
 function Timer.time()
-	return tmr.read(tmr.SYS_TIMER)
+	return os.time()
 end
 
 function Timer:new(id, expires, event)

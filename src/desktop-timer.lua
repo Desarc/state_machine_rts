@@ -1,28 +1,28 @@
-local Timer = {
+Timer = {
 	BASE = 0.001, -- number of time units for 1ms
 }
+
+function Timer:expires()
+	return self.data.expires
+end
+
+function Timer:event()
+	return self.data.event
+end
+
+function Timer:id()
+	return self.data.id
+end
 
 function Timer.time()
 	return os.time()
 end
 
-function Timer:new(id, expires, event)
+
+function Timer:new(id, expires, state_machine_id, event)
 	local o = {}
 	setmetatable(o, { __index = self })
-	local data = {id = id, expires = self.time()+expires, event = event}
-
-	o.id = function ()
-		return data.id
-	end
-
-	o.expires = function ()
-		return data.expires
-	end
-
-	o.event = function ()
-		return data.event
-	end
-	
+	o.data = {id = id, expires = self.time()+expires, event = event}
 	return o
 end
 

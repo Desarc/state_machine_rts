@@ -31,13 +31,13 @@ local stm_st1 = STMSimpleTask:new("stm_st1", scheduler)
 
 --local event1 = Event:new(stm_bw1:id(), STMBusyWork.events.START)
 
-local event1 = Event:new(stm_ec1.id(), STMExternalConnection.events.CONNECT)
+local event1 = Event:new(stm_ec1:id(), STMExternalConnection.events.CONNECT)
 
-local event2 = Event:new(stm_ql1.id(), STMQueueLength.events.START)
+local event2 = Event:new(stm_ql1:id(), STMQueueLength.events.START)
 
-local event3 = Event:new(stm_eg1.id(), STMEventGenerator.events.START)
+local event3 = Event:new(stm_eg1:id(), STMEventGenerator.events.START)
 
-scheduler.add_event(event1)
-scheduler.add_event(event2)
-scheduler.add_event(event3)
+scheduler:add_event(event1)
+scheduler:add_event(event2)
+scheduler:add_event(event3)
 scheduler:run()

@@ -1,6 +1,16 @@
-local Event = require "event"
+Event = require "event"
 
-local Message = {}
+Message = {}
+
+function Message:serialize()
+	local serialized_str = ""
+	for i,v in pairs(self.data) do
+		if v ~= nil then
+			serialized_str = serialized_str..tostring(i)..":"..tostring(v)..";"
+		end
+	end
+	return serialized_str..'\n'
+end
 
 function Message.deserialize(content)
 	local message = Message:new({})
@@ -17,9 +27,37 @@ function Message.deserialize(content)
 			break
 		end
 		value = string.sub(content, delim1+1, delim2-1)
-		message.add_data(key, value)
+		message.data[key] = value
 	end
 	return message
+end
+
+function Message:generate_event()
+	local state_machine_id, event_type, user_data
+	if self.data.stm_id then
+		state_machine_id = self.data.stm_id
+	else
+		return nil
+	end
+	if self.data.event_type then
+		event_type = tonumber(self.data.event_type)
+	else
+		return nil
+	end
+	user_data = self.data.user_data	
+	return Event:new(state_machine_id, event_type, user_data)
+end
+
+function Message:content_index()
+	local content_str = ""
+	for k, v in pairs(self.data) do
+		content_str = content_str.." "..k
+	end
+	return content_str
+end
+
+function Message:lookup(key)
+	return self.data[key]
 end
 
 --[[
@@ -32,52 +70,10 @@ end
 function Message:new(variables)
 	local o = {}
 	setmetatable(o, { __index = self })
-	local data = {}
+	o.data = {}
 	for k,v in pairs(variables) do
-		data[k] = v
+		o.data[k] = v
 	end
-
-	o.lookup = function (key)
-		return data[key]
-	end
-
-	o.add_data = function (key, value)
-		data[key] = value
-	end
-
-	o.serialize = function ()
-		local serialized_str = ""
-		for i,v in pairs(data) do
-			if v ~= nil then
-				serialized_str = serialized_str..tostring(i)..":"..tostring(v)..";"
-			end
-		end
-		return serialized_str..'\n'
-	end
-
-	o.generate_event = function ()
-		local state_machine_id, event_type
-		if data.stm_id then
-			state_machine_id = data.stm_id
-		else
-			return nil
-		end
-		if data.event_type then
-			event_type = tonumber(data.event_type)
-		else
-			return nil
-		end
-		return Event:new(state_machine_id, event_type, data.user_data)
-	end
-
-	o.content_index = function ()
-		local content_str = ""
-		for k, v in pairs(data) do
-			content_str = content_str.." "..k
-		end
-		return content_str
-	end
-
 	return o
 end
 

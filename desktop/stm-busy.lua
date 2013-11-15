@@ -40,7 +40,7 @@ function STMBusyWork:new(id, scheduler)
 	o.run_count = 0
 	o.total_count = 0
 	o.time = {}
-	scheduler:add_state_machine(o)
+	scheduler.add_state_machine(o)
 	return o
 end
 
