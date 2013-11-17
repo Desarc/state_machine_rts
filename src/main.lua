@@ -1,7 +1,7 @@
 package.path = "/wo/?.lua;"..package.path
 
-print("step: "..collectgarbage("setstepmul", 200))
-print("pause: "..collectgarbage("setpause"), 110)
+print("step: "..collectgarbage("setstepmul", 500))
+--print("pause: "..collectgarbage("setpause", 110))
 
 StateMachine = require "stm"
 Scheduler = require "sched"
