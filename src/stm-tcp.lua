@@ -3,7 +3,7 @@ local Timer = require "desktop-timer"
 local Event = require "event"
 local Message = require "msg"
 local socket = require "socket"
-local STMQueueLength = require "stm-queue"
+--local STMQueueLength = require "stm-queue"
 
 local CONNECTED, DISCONNECTED, WAITING_DATA = "connected", "disconnected", "waiting_data"
 local T1 = "t1"
@@ -11,8 +11,8 @@ local REQUEST_INTERVAL = 10000*Timer.BASE
 local READ_TIMEOUT = nil
 --local READ_TIMEOUT = 10000*Timer.BASE
 local SEND_TIMEOUT = 10000*Timer.BASE
-local ASSOCIATE_ID = "stm_ql1"
-local ASSOCIATE_EVENT = STMQueueLength.events.SEND_DATA
+--local ASSOCIATE_ID = "stm_ql1"
+--local ASSOCIATE_EVENT = STMQueueLength.events.SEND_DATA
 
 
 local STMTcpSocket = StateMachine:new()

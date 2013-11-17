@@ -9,6 +9,7 @@ local T1, T2 = "t1", "t2"
 local MEASURE_INTERVAL = 100*Timer.BASE
 local SEND_INTERVAL = 1000*Timer.BASE
 local CONN_ID = "stm_ec1"
+local CONN_EVENT = STMExternalConnection.events.SEND_MESSAGE
 local ASSOCIATE_ID = "stm_l1"
 local ASSOCIATE_EVENT = 2 -- STMLogger.events.LOG
 
@@ -52,7 +53,7 @@ function STMQueueLength:send_data(event)
 		self.measurements[i] = nil
 	end
 	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = data})
-	local event = self:create_event(event, CONN_ID, STMExternalConnection.events.SEND_MESSAGE, message)
+	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
 	self.scheduler:add_event(event)
 end
 

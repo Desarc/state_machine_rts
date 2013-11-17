@@ -1,7 +1,7 @@
 local Scheduler = require "sched"
 local Event = require "event"
-local STMEventGenerator = require "stm-desktop-event-gen"
-local STMBusyWork = require "stm-busy"
+--local STMEventGenerator = require "stm-desktop-event-gen"
+--local STMBusyWork = require "stm-busy"
 local STMTcpSocket = require "stm-tcp"
 local STMLogger = require "stm-logger"
 --local STMTrafficLight = require "stm-light"
@@ -29,7 +29,7 @@ local stm_l1 = STMLogger:new("stm_l1", scheduler)
 
 --local event1 = Event:new(stm_pt1:id(), STMPeriodicTimer.events.START)
 
-local event2 = Event:new(stm_l1:id(), STMLogger.events.START, "mem500.txt")
+local event2 = Event:new(stm_l1:id(), STMLogger.events.START, "time50000_1.txt")
 
 local event5 = Event:new(stm_ts1:id(), STMTcpSocket.events.CONNECT)
 
