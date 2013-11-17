@@ -3,7 +3,7 @@
 --local StateMachine = require "stm"
 
 local DESKTOP_TIMEOUT = 10e10
-local CONTROLLER_TIMEOUT = 300000000
+local CONTROLLER_TIMEOUT = 5000000
 
 Scheduler = {}
 
@@ -113,16 +113,30 @@ function Scheduler:new(system_type)
 	return o
 end
 
+
+function Scheduler.average(list)
+	local sum = 0
+	local count = 0
+	for k,v in ipairs(list) do
+		sum = sum + v
+		count = count + 1
+	end
+	local average = sum/count
+	return average
+end
+
 function Scheduler:run()
 	print("Scheduler running.")
 	-- TODO: passive waiting if no events/timers?
 	local success, status, state_machine
 	local start = self.time()
+	local times = {}
 
 	while(true) do	
 		
 		if start+self.timeout < self.time() then -- terminate after timeout
 			print("Ran for 60 sec, terminating...")
+			print(self.average(times))
 			break
 		end
 		
@@ -144,9 +158,15 @@ function Scheduler:run()
 		local event = self:get_next_event()
 		if event then
 			--print("Event received!")
+			local stm_start, delta
 			state_machine = self.state_machine_list[event:state_machine_id()]
 			self:set_active_event(event)
+			stm_start = self.time()
 			success, status = coroutine.resume(state_machine.run, state_machine)
+			if event:type() == 4 then
+				delta = self.time()-stm_start
+				table.insert(times, delta)
+			end
 			if not success then
 				print("Success: "..tostring(success)..", status: "..status)
 				self:remove_state_machine(state_machine)
@@ -154,6 +174,8 @@ function Scheduler:run()
 			elseif status == StateMachine.TERMINATE_SYSTEM then
 				break
 			end
+			
+
 		end
 	end
 	print("Terminating system...")

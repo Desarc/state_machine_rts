@@ -28,3 +28,17 @@ fclose(file2);
 fclose(file3);
 fclose(file4);
 fclose(file5);
+
+% values: gc pause: 110, task_size: 500, EVENT_INTERVAL (task): 1ms,
+% MEASURE_INTERVAL: 100ms, SEND_INTERVAL: 1s
+
+[max400, i400] = max(data3);
+[max500, i500] = max(data4);
+[max600, i600] = max(data5);
+
+max400
+index400 = i400*dt
+max500
+index500 = i500*dt
+max600
+index600 = i600*dt

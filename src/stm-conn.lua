@@ -54,7 +54,6 @@ end
 
 function STMExternalConnection:send_external(message)
 	local out_data = message:serialize()
-	print("Sending data...")
 	local res, err = net.send(self.socket, out_data)
 	if err ~= 0 then
 		return res, err

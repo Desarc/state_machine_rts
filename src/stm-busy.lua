@@ -4,8 +4,8 @@
 
 local IDLE, WORKING  = "idle", "working"
 local task_sizes = {10, 50, 100, 500, 1000, 5000, 10000, 50000}
---local task_repeats = {1, 50, 100, 500}
-local task_repeats = {1}
+local task_repeats = {1, 50, 100, 500}
+--local task_repeats = {1}
 local runs = 10
 
 local current_size = task_sizes[1]
@@ -28,13 +28,8 @@ STMBusyWork.events = {
 function STMBusyWork:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
-	local sched = scheduler
-	o.set_id(id)
-	o.set_id = function () error("Function not accessible.") end
-	o.set_state(IDLE)
-	o.scheduler = function ()
-		return sched
-	end
+	o.data = {id = id, state = IDLE}
+	o.scheduler = scheduler
 	o.current_size_count = 1
 	o.current_repeats_count = 1
 	o.repeat_count = 0
@@ -56,21 +51,21 @@ function STMBusyWork:average()
 	return average
 end
 
-function STMBusyWork:schedule_self()
-	local event = Event:new(self.id(), self.events.DO_WORK)
-	self.scheduler().add_event(event)
+function STMBusyWork:schedule_self(event)
+	local event = self:create_event(event, self:id(), self.events.DO_WORK)
+	self.scheduler:add_event(event)
 end
 
 function STMBusyWork:fire()
 	while(true) do
-		local event = self.scheduler().get_active_event()
-		local current_state = self.state()
+		local event = self.scheduler:get_active_event()
+		local current_state = self:state()
 
 		if current_state == IDLE then
-			if event.type() == self.events.START then
-				self:schedule_self()
-				self.start = self.scheduler().time()
-				self.set_state(WORKING)
+			if event:type() == self.events.START then
+				self:schedule_self(event)
+				self.start = self.scheduler.time()
+				self:set_state(WORKING)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			else
@@ -78,7 +73,7 @@ function STMBusyWork:fire()
 			end
 
 		elseif current_state == WORKING then
-			if event.type() == self.events.DO_WORK then
+			if event:type() == self.events.DO_WORK then
 				if self.repeat_count < current_repeats then
 					simple_task()
 					self.repeat_count = self.repeat_count + 1
@@ -86,19 +81,21 @@ function STMBusyWork:fire()
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 				else
-					local delta = self.scheduler().time() - self.start
+					local delta = self.scheduler.time() - self.start
 					table.insert(self.time, delta)
-					print(self.repeat_count)
 					self.run_count = self.run_count + 1
 					if self.run_count < runs then
 						self.repeat_count = 0
 						self:schedule_self()
-						self.start = self.scheduler().time()
+						self.start = self.scheduler.time()
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 					elseif self.total_count < table.getn(task_sizes)*table.getn(task_repeats) then
 						print(tostring(current_size).."/"..tostring(current_repeats)..": "..tostring(self:average()))
-						self.time = {}
+						--self.time = {}
+						for i,v in ipairs(self.time) do
+							self.time[i] = nil
+						end
 						if self.current_size_count >= table.getn(task_sizes) then
 							self.current_size_count = 1
 							if self.current_repeats_count >= table.getn(task_repeats) then
@@ -113,8 +110,8 @@ function STMBusyWork:fire()
 						current_repeats = task_repeats[self.current_repeats_count]
 						self.run_count = 0
 						self.total_count = self.total_count + 1
-						self:schedule_self()
-						self.start = self.scheduler().time()
+						self:schedule_self(event)
+						self.start = self.scheduler.time()
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 					else

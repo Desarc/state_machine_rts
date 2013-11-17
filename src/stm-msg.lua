@@ -2,36 +2,34 @@
 --local StateMachine = require "stm"
 
 local INACTIVE, ACTIVE  = "inactive", "active"
-local T1 = "t1"
-local EVENT_INTERVAL = 1*Timer.BASE
-local task_size = 50000
-local ASSOCIATE_ID = "stm_l1"
-local ASSOCIATE_EVENT = 2 -- STMLogger.events.LOG
 local CONN_ID = "stm_ec1"
 local CONN_EVENT = STMExternalConnection.events.SEND_MESSAGE
-local send_counter = 100
+local msg_size = 400
 
-local function simple_task()
-	for i=1,task_size do
-		q = i*i
-	end
-end
+local STMSendMessage = StateMachine:new()
 
-
-local STMSimpleTask = StateMachine:new()
-
-STMSimpleTask.events = {
+STMSendMessage.events = {
 	START = 1,
-	RUN_TASK = 2,
+	SEND = 2,
 }
 
-function STMSimpleTask:schedule_self(timer_no, event, timer)
-	event = self:create_event(event, self:id(), self.events.RUN_TASK)
-	timer = self:set_timer(timer, self:id()..timer_no, EVENT_INTERVAL, event)
-	event:set_timer(timer)
+function STMSendMessage:schedule_self(event)
+	event = self:create_event(event, self:id(), self.events.SEND)
+	self.scheduler:add_event(event)
 end
 
-function STMSimpleTask:new(id, scheduler)
+function STMSendMessage:send_message(event)
+	local msg = {}
+	for i=1,msg_size do
+		msg[i] = "a"
+	end
+	table.insert(msg, "\n")
+	local message = Message:new({user_data = table.concat(msg, "")})
+	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
+	self.scheduler:add_event(event)
+end
+
+function STMSendMessage:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {id = id, state = INACTIVE}
@@ -40,14 +38,15 @@ function STMSimpleTask:new(id, scheduler)
 	return o
 end
 
-function STMSimpleTask:fire()
+function STMSendMessage:fire()
 	while(true) do
 		local event = self.scheduler:get_active_event()
 		local current_state = self:state()
 
 		if current_state == INACTIVE then
 			if event:type() == self.events.START then
-				self:schedule_self(T1, event, event:timer())
+				print("STMSendMessage started.")
+				self:schedule_self(event)
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -56,9 +55,9 @@ function STMSimpleTask:fire()
 			end
 
 		elseif current_state == ACTIVE then
-			if event:type() == self.events.RUN_TASK then
-				simple_task()
-				self:schedule_self(T1, event, event:timer())
+			if event:type() == self.events.SEND then
+				self:send_message(nil)
+				self:schedule_self(event)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			else
@@ -72,4 +71,4 @@ function STMSimpleTask:fire()
 
 end
 
-return STMSimpleTask
+return STMSendMessage
