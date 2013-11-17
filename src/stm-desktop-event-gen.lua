@@ -28,18 +28,16 @@ function STMEventGenerator:new(id, scheduler)
 	return o
 end
 
-function STMEventGenerator:generate_request()
-	print("Requesting readings...")
+function STMEventGenerator:generate_request(event)
 	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = STMQueueLength.events.SEND_DATA})
-	local event = Event:new(SOCKET_ID, STMTcpSocket.events.REQUEST, message)
+	event = self:create_event(event, SOCKET_ID, STMTcpSocket.events.REQUEST, message)
 	self.scheduler:add_event(event)
 end
 
-function STMEventGenerator:schedule_self(timer_no)
-	local event = Event:new(self:id(), self.events.GENERATE_NEW)
-	local timer = Timer:new(self:id()..timer_no, EVENT_INTERVAL, event)
-	event:set_timer_id(timer_no)
-	self.scheduler:add_timer(timer)
+function STMEventGenerator:schedule_self(timer_no, event, timer)
+	event = self:create_event(event, self:id(), self.events.GENERATE_NEW)
+	timer = self:set_timer(timer, self:id()..timer_no, EVENT_INTERVAL, event)
+	event:set_timer(timer)
 end
 
 function STMEventGenerator:fire()
@@ -51,7 +49,7 @@ function STMEventGenerator:fire()
 			
 			if event:type() == self.events.START then
 				print("Event generator started!")
-				self:schedule_self(T1)
+				self:schedule_self(T1, event, event:timer())
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -62,8 +60,8 @@ function STMEventGenerator:fire()
 		elseif current_state == ACTIVE then
 			
 			if event:type() == self.events.GENERATE_NEW then
-				self:generate_request()
-				self:schedule_self(T1)
+				self:generate_request(nil)
+				self:schedule_self(T1, event, event:timer())
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.STOP then

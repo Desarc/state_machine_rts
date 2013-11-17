@@ -6,12 +6,28 @@ function Timer:expires()
 	return self.data.expires
 end
 
+function Timer:renew(expires)
+	self.data.expires = self.time()+expires
+end
+
 function Timer:event()
 	return self.data.event
 end
 
+function Timer:set_event(event)
+	self.data.event = event
+end
+
 function Timer:id()
 	return self.data.id
+end
+
+function Timer:set_id(id)
+	self.data.id = id
+end
+
+function Timer:to_string()
+	return tostring(self:id()).."\n"..tostring(self:expires()).."\n"..tostring(self:event()).."\n"
 end
 
 function Timer.time()

@@ -4,8 +4,16 @@ function Event:state_machine_id()
 	return self.data.state_machine_id
 end
 
+function Event:set_id(id)
+	self.data.state_machine_id = id
+end
+
 function Event:type()
 	return self.data.event_type
+end
+
+function Event:set_type(type)
+	self.data.event_type = type
 end
 
 function Event:get_data()
@@ -20,12 +28,12 @@ function Event:to_string()
 	return tostring(self:state_machine_id()).."\n"..tostring(self:type()).."\n"..tostring(self:get_data()).."\n"
 end
 
-function Event:set_timer_id(timer_id)
-	self.data.timer_id = timer_id
+function Event:set_timer(timer)
+	self.data.timer = timer
 end
 
-function Event:timer_id()
-	return self.data.timer_id
+function Event:timer()
+	return self.data.timer
 end
 
 function Event:new(state_machine_id, event_type, user_data)

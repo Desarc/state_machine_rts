@@ -34,7 +34,7 @@ end
 -- a state machine must always be in a state.
 function StateMachine:state()
 	if self.data then
-		return self.data.current_state
+		return self.data.state
 	else
 		error("StateMachine has no state!")
 	end
@@ -47,9 +47,31 @@ function StateMachine:set_state(state)
 	if not self.data then
 		self.data = {}
 	end
-	self.data.current_state = state
+	self.data.state = state
 end
 
+function StateMachine:create_event(event, id, type, data)
+	if event then
+		event:set_id(id)
+		event:set_type(type)
+		event:set_data(data)
+	else
+		event = Event:new(id, type, data)
+	end
+	return event
+end
+
+function StateMachine:set_timer(timer, id, expires, event)
+	if timer then
+		timer:set_id(id)
+		timer:renew(expires)
+		timer:set_event(event)
+	else
+		timer = Timer:new(id, expires, event)
+	end
+	self.scheduler:add_timer(timer)
+	return timer
+end
 
 function StateMachine:to_string()
 	return tostring(self:id())..": "..tostring(self:get_state())

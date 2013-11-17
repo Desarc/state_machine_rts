@@ -1,11 +1,13 @@
- local StateMachine = require "stm"
- local Timer = require "timer"
- local Event = require "event"
- local STMExternalConnection = require "stm-conn"
+-- assume modules are loaded my main
+--local StateMachine = require "stm"
+--local Timer = require "timer"
+--local Event = require "event"
+--local STMExternalConnection = require "stm-conn"
 
 local ACTIVE, IDLE = "active", "idle"
-local T1 = "t1"
-local MEASURE_INTERVAL = 1000*Timer.BASE
+local T1, T2 = "t1", "t2"
+local MEASURE_INTERVAL = 100*Timer.BASE
+local SEND_INTERVAL = 1000*Timer.BASE
 local CONN_ID = "stm_ec1"
 local ASSOCIATE_ID = "stm_l1"
 local ASSOCIATE_EVENT = 2 -- STMLogger.events.LOG
@@ -19,27 +21,38 @@ STMQueueLength.events = {
 	SEND_DATA = 4,
 }
 
-function STMQueueLength:schedule_measure(timer_no)
-	local event = Event:new(self:id(), self.events.MEASURE)
-	local timer = Timer:new(self:id()..timer_no, MEASURE_INTERVAL, event)
-	event:set_timer_id(timer_no)
-	self.scheduler:add_timer(timer)
+function STMQueueLength:schedule_measure(timer_no, event, timer)
+	event = self:create_event(event, self:id(), self.events.MEASURE)
+	timer = self:set_timer(timer, self:id()..timer_no, MEASURE_INTERVAL, event)
+	event:set_timer(timer)
+end
+
+function STMQueueLength:schedule_send(timer_no, event, timer)
+	event = self:create_event(event, self:id(), self.events.SEND_DATA)
+	timer = self:set_timer(timer, self:id()..timer_no, SEND_INTERVAL, event)
+	event:set_timer(timer)
 end
 
 function STMQueueLength:measure()
-	local events = self.scheduler:event_queue_length()
-	local timers = self.scheduler:timer_queue_length()
-	table.insert(self.measurements, events+timers)
+	-- measuring
+	--local events = self.scheduler:event_queue_length()
+	--local timers = self.scheduler:timer_queue_length()
+	local mem = collectgarbage("count")
+	table.insert(self.measurements, mem)
 end
 
-function STMQueueLength:send_data()
+function STMQueueLength:send_data(event)
 	local data = ""
-	for k,v in pairs(self.measurements) do
+	for i,v in ipairs(self.measurements) do
 		data = data..tostring(v).." "
 	end
-	self.measurements = {}
+	-- assign nil values instead of setting measurements = {}
+	-- this is cleaner and conserves memory
+	for i,v in ipairs(self.measurements) do
+		self.measurements[i] = nil
+	end
 	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = data})
-	local event = Event:new(CONN_ID, STMExternalConnection.events.SEND_MESSAGE, message)
+	local event = self:create_event(event, CONN_ID, STMExternalConnection.events.SEND_MESSAGE, message)
 	self.scheduler:add_event(event)
 end
 
@@ -49,6 +62,7 @@ function STMQueueLength:new(id, scheduler)
 	o.data = {id = id, state = IDLE}
 	o.scheduler = scheduler
 	scheduler:add_state_machine(o)
+	o.measurements = {}
 	return o
 end
 
@@ -60,7 +74,8 @@ function STMQueueLength:fire()
 		if current_state == IDLE then
 			if event:type() == self.events.START then
 				print("Queue length observer started!")
-				self:schedule_measure(T1)
+				self:schedule_measure(T1, event, event:timer())
+				self:schedule_send(T2, nil, nil)
 				self:set_state(ACTIVE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -71,11 +86,12 @@ function STMQueueLength:fire()
 		elseif current_state == ACTIVE then
 			if event:type() == self.events.MEASURE then
 				self:measure()
-				self:schedule_measure(T1)
+				self:schedule_measure(T1, event, event:timer())
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.SEND_DATA then
-				self:send_data()
+				self:schedule_send(T2, event, event:timer())
+				self:send_data(nil)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 
@@ -90,6 +106,7 @@ function STMQueueLength:fire()
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end
+
 	end
 end
 

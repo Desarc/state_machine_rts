@@ -1,7 +1,9 @@
-StateMachine = require "stm"
+-- assume modules are loaded by main
+
+--local StateMachine = require "stm"
 
 local DESKTOP_TIMEOUT = 10e10
-local CONTROLLER_TIMEOUT = 30000000
+local CONTROLLER_TIMEOUT = 300000000
 
 Scheduler = {}
 
@@ -49,7 +51,7 @@ function Scheduler:event_queue_length()
 end
 
 function Scheduler:timer_queue_length()
-	return table.getn(self.timers)
+	return table.getn(self.timer_queue)
 end
 
 function Scheduler.time()
@@ -89,9 +91,10 @@ function Scheduler:set_active_event(event)
 end
 
 function Scheduler:get_active_event()
-	local event = self.active_event
-	self.active_event = nil
-	return event
+	return self.active_event
+	--local event = self.active_event
+	--self.active_event = nil
+	--return event
 end
 
 function Scheduler:new(system_type)
@@ -116,11 +119,10 @@ function Scheduler:run()
 	local success, status, state_machine
 	local start = self.time()
 
-	while(true) do
-		
+	while(true) do	
 		
 		if start+self.timeout < self.time() then -- terminate after timeout
-			print("Ran for 30 sec, terminating...")
+			print("Ran for 60 sec, terminating...")
 			break
 		end
 		

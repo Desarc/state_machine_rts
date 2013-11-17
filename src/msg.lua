@@ -1,4 +1,5 @@
-Event = require "event"
+-- assume libraries are loaded by main
+--local Event = require "event"
 
 Message = {}
 

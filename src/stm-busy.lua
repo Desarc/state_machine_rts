@@ -1,5 +1,6 @@
-local StateMachine = require "stm"
-local Event = require "event"
+-- assume modules are loaded by main
+--local StateMachine = require "stm"
+--local Event = require "event"
 
 local IDLE, WORKING  = "idle", "working"
 local task_sizes = {10, 50, 100, 500, 1000, 5000, 10000, 50000}
@@ -87,6 +88,7 @@ function STMBusyWork:fire()
 				else
 					local delta = self.scheduler().time() - self.start
 					table.insert(self.time, delta)
+					print(self.repeat_count)
 					self.run_count = self.run_count + 1
 					if self.run_count < runs then
 						self.repeat_count = 0

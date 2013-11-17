@@ -1,12 +1,13 @@
-local StateMachine = require "stm"
-local Timer = require "timer"
-local Event = require "event"
-local Message = require "msg"
+-- assume modules are loaded by main
+--local StateMachine = require "stm"
+--local Timer = require "timer"
+--local Event = require "event"
+--local Message = require "msg"
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
 local T1 = "t1"
 local RECEIVE_INTERVAL = 500*Timer.BASE
-local RECEIVE_TIMEOUT = 10*Timer.BASE
+local RECEIVE_TIMEOUT = 100*Timer.BASE
 
 local STMExternalConnection = StateMachine:new()
 
@@ -62,25 +63,22 @@ end
 
 
 function STMExternalConnection:receive_external()
+	print("Reading...")
 	local data, err = net.recv(self.socket, "*l", tmr.SYS_TIMER, RECEIVE_TIMEOUT)
 	if err ~= 0 then
 		return err
 	elseif data ~= 0 then
 		local message = Message.deserialize(data)
-		local event = message.generate_event()
+		local event = message:generate_event()
 		if event then
 			print("Received data request!")
-			self.scheduler().add_event(event)
+			self.scheduler:add_event(event)
+		else
+			print("Invalid data received!")
+			print(data)
 		end
 	end
 	return false
-end
-
-function STMExternalConnection:schedule_receive(timer_no)
-	local event = Event:new(self:id(), self.events.RECEIVE_MESSAGE)
-	local timer = Timer:new(self:id()..timer_no, RECEIVE_INTERVAL, event)
-	event:set_timer_id(timer_no)
-	self.scheduler:add_timer(timer)
 end
 
 function STMExternalConnection:new(id, scheduler)
@@ -102,7 +100,6 @@ function STMExternalConnection:fire()
 			if event:type() == self.events.CONNECT then
 				if self:connect_external() then
 					self:set_state(CONNECTED)
-					self:schedule_receive(T1)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				
 				else
@@ -129,17 +126,6 @@ function STMExternalConnection:fire()
 					coroutine.yield(StateMachine.TERMINATE_SYSTEM)
 				
 				else
-					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-				end
-
-			elseif event:type() == self.events.RECEIVE_MESSAGE then
-				local err = self:receive_external()
-				if err == net.ERR_CLOSED or err == net.ERR_ABORTED then
-					print("Connection closed.")
-					coroutine.yield(StateMachine.TERMINATE_SYSTEM) -- add option to terminate remotely by closing connection
-				
-				else
-					self:schedule_receive(T1)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 				end
 
