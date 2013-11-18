@@ -9,7 +9,7 @@ local T1 = "t1"
 local RECEIVE_INTERVAL = 500*Timer.BASE
 local RECEIVE_TIMEOUT = 100*Timer.BASE
 
-local STMExternalConnection = StateMachine:new()
+STMExternalConnection = StateMachine:new()
 
 STMExternalConnection.events = {
 	CONNECT = 1,
@@ -54,6 +54,7 @@ end
 
 function STMExternalConnection:send_external(message)
 	local out_data = message:serialize()
+	print("Sending data...")
 	local res, err = net.send(self.socket, out_data)
 	if err ~= 0 then
 		return res, err

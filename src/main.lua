@@ -1,22 +1,22 @@
 package.path = "/wo/?.lua;"..package.path
 
-print("step: "..collectgarbage("setstepmul", 400))
+print("step: "..collectgarbage("setstepmul", 600))
 --print("pause: "..collectgarbage("setpause", 110))
 
-StateMachine = require "stm"
-Scheduler = require "sched"
-Event = require "event"
-Timer = require "timer"
-Message = require "msg"
---STMBusyWork = require "stm-busy"
-STMExternalConnection = require "stm-conn"
---STMQueueLength = require "stm-queue"
---STMCounter = require "stm-count"
---STMTimeMeasure = require "stm-time"
---STMSimpleTask = require "stm-task"
-STMSendMessage = require "stm-msg"
---STMEventGenerator = require "stm-gen"
---STMGarbageCollector = require "stm-garb"
+require "stm"
+require "sched"
+require "event"
+require "timer"
+require "msg"
+--require "stm-busy"
+require "stm-conn"
+--require "stm-queue"
+--require "stm-count"
+--require "stm-time"
+--require "stm-task"
+require "stm-msg"
+--require "stm-gen"
+--require "stm-garb"
 
 local scheduler = Scheduler:new(Scheduler.type.CONTROLLER)
 

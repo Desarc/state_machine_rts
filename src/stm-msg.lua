@@ -4,9 +4,9 @@
 local INACTIVE, ACTIVE  = "inactive", "active"
 local CONN_ID = "stm_ec1"
 local CONN_EVENT = STMExternalConnection.events.SEND_MESSAGE
-local msg_size = 400
+local msg_size = 100
 
-local STMSendMessage = StateMachine:new()
+STMSendMessage = StateMachine:new()
 
 STMSendMessage.events = {
 	START = 1,

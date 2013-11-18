@@ -4,13 +4,22 @@
 Message = {}
 
 function Message:serialize()
-	local serialized_str = ""
+	local serialized = {}
+	local count = 1
 	for i,v in pairs(self.data) do
 		if v ~= nil then
-			serialized_str = serialized_str..tostring(i)..":"..tostring(v)..";"
+			serialized[count] = tostring(i)
+			count = count + 1
+			serialized[count] = ":"
+			count = count + 1
+			serialized[count] = tostring(v)
+			count = count + 1
+			serialized[count] = ";"
+			count = count + 1
 		end
 	end
-	return serialized_str..'\n'
+	serialized[count] = '\n'
+	return table.concat(serialized, "")
 end
 
 function Message.deserialize(content)
@@ -50,11 +59,11 @@ function Message:generate_event()
 end
 
 function Message:content_index()
-	local content_str = ""
-	for k, v in pairs(self.data) do
-		content_str = content_str.." "..k
+	local content = {}
+	for i=1,table.getn(self.data) do
+		content[i] = k
 	end
-	return content_str
+	return table.concat(content, " ")
 end
 
 function Message:lookup(key)

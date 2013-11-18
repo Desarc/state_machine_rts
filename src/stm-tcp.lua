@@ -44,6 +44,7 @@ function STMTcpSocket:read_socket()
 		print(err)
 		return false
 	else
+		print(line)
 		local message = Message.deserialize(line)
 		local event = message:generate_event()
 		if event then
