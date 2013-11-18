@@ -88,9 +88,6 @@ end
 
 function Scheduler:get_active_event()
 	return self.active_event
-	--local event = self.active_event
-	--self.active_event = nil
-	--return event
 end
 
 function Scheduler:new(system_type)
@@ -107,18 +104,6 @@ function Scheduler:new(system_type)
 		o.timeout = CONTROLLER_TIMEOUT
 	end
 	return o
-end
-
-
-function Scheduler.average(list)
-	local sum = 0
-	local count = 0
-	for k,v in ipairs(list) do
-		sum = sum + v
-		count = count + 1
-	end
-	local average = sum/count
-	return average
 end
 
 function Scheduler:run()

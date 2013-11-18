@@ -1,6 +1,6 @@
 package.path = "/wo/?.lua;"..package.path
 
-print("step: "..collectgarbage("setstepmul", 300))
+print("step: "..collectgarbage("setstepmul", 600))
 --print("pause: "..collectgarbage("setpause", 110))
 
 require "stm"

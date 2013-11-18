@@ -85,13 +85,11 @@ end
 	SomeStateMachine = StateMachine:new()
 
 	function SomeStateMachine:new(id, scheduler)
-		o = {}
-		setmetatable(o, { __index = self})		-- inherit functions from parent object
-		o.data = {}								-- create a table for "private" variables and data
-		o.data.id = id 							-- a StateMachine must always have an ID, so this should be part of the constructor
-		o.data.current_state = <initial_state> 	-- set initial state
-		o.scheduler = scheduler					-- make a reference to the responsible scheduler (e.g. for timer handling)
-		scheduler:add_state_machine(o)			-- add this StateMachine instance to scheduler's list
+		local o = {}
+		setmetatable(o, { __index = self})				-- inherit functions from parent object
+		o.data = {id = id, state = <initial_state>}		-- create a table for "private" variables and data
+		o.scheduler = scheduler							-- make a reference to the responsible scheduler (e.g. for timer handling)
+		scheduler:add_state_machine(o)					-- add this StateMachine instance to scheduler's list
 		return o
 	end
 

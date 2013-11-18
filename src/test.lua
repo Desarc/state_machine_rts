@@ -12,7 +12,7 @@ local function average()
 	local count = 0
 	for i,v in ipairs(time) do
 		sum = sum + v
-		count = count + 1
+		count = i
 	end
 	local average = sum/count
 	return average
@@ -39,7 +39,9 @@ for i=1,table.getn(task_repeats) do
 			table.insert(time, delta)
 		end
 		print(tostring(current_size).."/"..tostring(current_repeats)..": "..tostring(average()))
-		time = {}
+		for i,v in ipairs(time) do
+			time[i] = nil
+		end
 	end
 end]]
 
@@ -59,7 +61,7 @@ function Test:new ()
 		local count = 0
 		for i,v in ipairs(deltas) do
 			sum = sum + v
-			count = count + 1
+			count = i
 		end
 		local average = sum/count
 		return average
@@ -88,7 +90,9 @@ function Test:new ()
 				table.insert(deltas, delta)
 			end
 			print(tostring(current_size)..": "..tostring(average()))
-			deltas = {}
+			for i,v in ipairs(deltas) do
+				deltas[i] = nil
+			end
 		end
 	end
 

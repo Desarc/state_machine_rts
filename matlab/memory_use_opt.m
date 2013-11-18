@@ -32,19 +32,24 @@ fclose(file5);
 % values: gc pause: 110, task_size: 500, EVENT_INTERVAL (task): 1ms,
 % MEASURE_INTERVAL: 100ms, SEND_INTERVAL: 1s
 
+avg200 = mean(data1);
+avg300 = mean(data2);
+avg400 = mean(data3);
+avg500 = mean(data4);
+avg600 = mean(data5);
+averages = [avg200, avg300, avg400, avg500, avg600]
+
 [max200, i200] = max(data1);
 [max300, i300] = max(data2);
 [max400, i400] = max(data3);
 [max500, i500] = max(data4);
 [max600, i600] = max(data5);
 
-max200
-index200 = i200*dt
-max300
-index00 = i300*dt
-max400
-index400 = i400*dt
-max500
-index500 = i500*dt
-max600
-index600 = i600*dt
+maxes = [max200, max300, max400, max500, max600]
+
+index200 = i200*dt;
+index300 = i300*dt;
+index400 = i400*dt;
+index500 = i500*dt;
+index600 = i600*dt;
+indices = [index200, index300, index400, index500, index600]

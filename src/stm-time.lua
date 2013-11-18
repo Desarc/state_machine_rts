@@ -30,7 +30,6 @@ function STMTimeMeasure:send_data(event)
 	local delta = now - self.previous
 	local queue = self.scheduler:event_queue_length()
 	self.previous = now
-	local mem = collectgarbage("count")
 	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = delta.." "..queue})
 	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
 	self.scheduler:add_event(event)
