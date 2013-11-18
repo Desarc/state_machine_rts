@@ -38,6 +38,11 @@ function Scheduler:add_event(event)
 	table.insert(self.event_queue, event)
 end
 
+function Scheduler:check_events()
+	if self.event_queue[1] then return true
+	else return false end
+end
+
 function Scheduler:get_next_event()
 	return table.remove(self.event_queue, 1)
 end
@@ -78,6 +83,14 @@ end
 function Scheduler:check_timers()
 	local now = self.time()
 	if self.timer_queue[1] then
+		if self.timer_queue[1]:expires() < now then return true end
+	end
+	return false
+end
+
+function Scheduler:get_next_timeout()
+	local now = self.time()
+	if self.timer_queue[1] then
 		if self.timer_queue[1]:expires() < now then return table.remove(self.timer_queue, 1) end
 	end
 end
@@ -113,14 +126,14 @@ function Scheduler:run()
 	local start = self.time()
 
 	while(true) do	
-		
+		local timer, event
 		if start+self.timeout < self.time() then -- terminate after timeout
 			print("Ran for 60 sec, terminating...")
 			break
 		end
 		
-		local timer = self:check_timers()
-		if timer then
+		if self:check_timers() then
+			timer = self:get_next_timeout()
 			--print("Timer expired!")
 			state_machine = self.state_machine_list[timer:event():state_machine_id()]
 			self:set_active_event(timer:event())
@@ -132,10 +145,10 @@ function Scheduler:run()
 			elseif status == StateMachine.TERMINATE_SYSTEM then
 				break
 			end
-		end
 
-		local event = self:get_next_event()
-		if event then
+		
+		elseif self:check_events() then
+			event = self:get_next_event()
 			--print("Event received!")
 			state_machine = self.state_machine_list[event:state_machine_id()]
 			self:set_active_event(event)
