@@ -33,11 +33,11 @@ function Scheduler:new()
 	end
 
 	o.remove_state_machine = function (id)
-		if state_machine_list[state_machine.id()] then
+		if state_machine_list[id] then
 			result = true
-			print("State machine '"..state_machine.id().."' removed from scheduler.")
+			print("State machine '"..id.."' removed from scheduler.")
 		end
-		state_machine_list[state_machine.id()] = nil
+		state_machine_list[id] = nil
 		return result
 	end
 

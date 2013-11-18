@@ -6,9 +6,7 @@ local STMTrafficLightController = StateMachine:new()
 
 local S0, S1, S2, S3, S4, S5 = "S0", "S1", "S2", "S3", "S4", "S5"
 local T1, T2, T3, T4, T5 = "t1", "t2", "t3", "t4", "t5"
-local YELLOW_DELAY = 3
-local PEDESTRIAN_TIME = 10
-local SAFE_TIME = 1
+local YELLOW_DELAY, PEDESTRIAN_TIME, SAFE_TIME = 3, 10, 1
 
 STMTrafficLightController.events = {
 	PEDESTRIAN_BUTTON_PRESSED = 1,
@@ -18,8 +16,8 @@ STMTrafficLightController.events = {
 	CARS_GO = 5,
 }
 
-function STMTrafficLightController:schedule_event(type, delay, timer_no)
-	local event = Event:new(self.id(), type)
+function STMTrafficLightController:schedule_event(event_type, delay, timer_no)
+	local event = Event:new(self.id(), event_type)
 	local timer = Timer:new(self.id()..timer_no, delay, event)
 	event.set_timer_id(timer_no)
 	self.scheduler().add_timer(timer)
