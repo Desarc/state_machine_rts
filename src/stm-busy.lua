@@ -1,6 +1,4 @@
--- assume modules are loaded by main
---local StateMachine = require "stm"
---local Event = require "event"
+STMBusyWork = StateMachine:new()
 
 local IDLE, WORKING  = "idle", "working"
 local task_sizes = {10, 50, 100, 500, 1000, 5000, 10000, 50000}
@@ -16,8 +14,6 @@ local function simple_task()
 		q = i*i
 	end
 end
-
-local STMBusyWork = StateMachine:new()
 
 STMBusyWork.events = {
 	START = 1,

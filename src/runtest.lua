@@ -1,6 +1,6 @@
 package.path = "/wo/?.lua;"..package.path
 
-local Test = require "test"
+require "test"
 
 local test = Test:new()
 

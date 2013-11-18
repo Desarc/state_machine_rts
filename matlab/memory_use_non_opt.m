@@ -1,10 +1,10 @@
-figure('Name', 'dynamic_memory_use')
+figure('Name', 'dynamic_memory_use_non_opt')
 hold off
-file1 = fopen('mem200.txt', 'r');
-file2 = fopen('mem300.txt', 'r');
-file3 = fopen('mem400.txt', 'r');
-file4 = fopen('mem500.txt', 'r');
-file5 = fopen('mem600.txt', 'r');
+file1 = fopen('mem_gc200_non_opt.txt', 'r');
+file2 = fopen('mem_gc300_non_opt.txt', 'r');
+file3 = fopen('mem_gc400_non_opt.txt', 'r');
+file4 = fopen('mem_gc500_non_opt.txt', 'r');
+file5 = fopen('mem_gc600_non_opt.txt', 'r');
 data1 = fscanf(file1, '%f');
 data2 = fscanf(file2, '%f');
 data3 = fscanf(file3, '%f');
@@ -32,10 +32,16 @@ fclose(file5);
 % values: gc pause: 110, task_size: 500, EVENT_INTERVAL (task): 1ms,
 % MEASURE_INTERVAL: 100ms, SEND_INTERVAL: 1s
 
+[max200, i200] = max(data1);
+[max300, i300] = max(data2);
 [max400, i400] = max(data3);
 [max500, i500] = max(data4);
 [max600, i600] = max(data5);
 
+max200
+index200 = i200*dt
+max300
+index00 = i300*dt
 max400
 index400 = i400*dt
 max500

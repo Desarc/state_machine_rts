@@ -43,7 +43,7 @@ for i=1,table.getn(task_repeats) do
 	end
 end]]
 
-local Test = {}
+Test = {}
 
 function Test:new ()
 	local o = {}

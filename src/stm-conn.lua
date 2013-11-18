@@ -1,15 +1,9 @@
--- assume modules are loaded by main
---local StateMachine = require "stm"
---local Timer = require "timer"
---local Event = require "event"
---local Message = require "msg"
+STMExternalConnection = StateMachine:new()
 
 local DISCONNECTED, CONNECTED = "disconnected", "connected"
 local T1 = "t1"
 local RECEIVE_INTERVAL = 500*Timer.BASE
 local RECEIVE_TIMEOUT = 100*Timer.BASE
-
-STMExternalConnection = StateMachine:new()
 
 STMExternalConnection.events = {
 	CONNECT = 1,

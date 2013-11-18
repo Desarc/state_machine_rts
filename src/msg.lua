@@ -1,6 +1,3 @@
--- assume libraries are loaded by main
---local Event = require "event"
-
 Message = {}
 
 function Message:serialize()
@@ -73,17 +70,17 @@ end
 --[[
 	call this constructor with a table constructor as argument, e.g.
 
-	local message = Message:new{title="welcome", address="home", content="hello"}
+	local message = Message:new({title="welcome", address="home", content="hello"})
 
 	message may contain any variables
 ]]
 function Message:new(variables)
 	local o = {}
 	setmetatable(o, { __index = self })
-	o.data = {}
-	for k,v in pairs(variables) do
-		o.data[k] = v
-	end
+	o.data = variables
+	--for k,v in pairs(variables) do
+	--	o.data[k] = v
+	--end
 	return o
 end
 

@@ -1,8 +1,4 @@
--- assume modules are loaded my main
---local StateMachine = require "stm"
---local Timer = require "timer"
---local Event = require "event"
---local STMExternalConnection = require "stm-conn"
+STMMemoryLog = StateMachine:new()
 
 local ACTIVE, IDLE = "active", "idle"
 local T1, T2 = "t1", "t2"
@@ -13,51 +9,46 @@ local CONN_EVENT = STMExternalConnection.events.SEND_MESSAGE
 local ASSOCIATE_ID = "stm_l1"
 local ASSOCIATE_EVENT = 2 -- STMLogger.events.LOG
 
-local STMQueueLength = StateMachine:new()
-
-STMQueueLength.events = {
+STMMemoryLog.events = {
 	START = 1,
 	STOP = 2,
 	MEASURE = 3,
 	SEND_DATA = 4,
 }
 
-function STMQueueLength:schedule_measure(timer_no, event, timer)
+function STMMemoryLog:schedule_measure(timer_no, event, timer)
 	event = self:create_event(event, self:id(), self.events.MEASURE)
 	timer = self:set_timer(timer, self:id()..timer_no, MEASURE_INTERVAL, event)
 	event:set_timer(timer)
 end
 
-function STMQueueLength:schedule_send(timer_no, event, timer)
+function STMMemoryLog:schedule_send(timer_no, event, timer)
 	event = self:create_event(event, self:id(), self.events.SEND_DATA)
 	timer = self:set_timer(timer, self:id()..timer_no, SEND_INTERVAL, event)
 	event:set_timer(timer)
 end
 
-function STMQueueLength:measure()
-	-- measuring
+function STMMemoryLog:measure()
+	-- measuring queue lengths or memory use
 	--local events = self.scheduler:event_queue_length()
 	--local timers = self.scheduler:timer_queue_length()
 	local mem = collectgarbage("count")
+	--table.insert(self.measurements, events+timers)
 	table.insert(self.measurements, mem)
 end
 
-function STMQueueLength:send_data(event)
-	local data = ""
-	for i,v in ipairs(self.measurements) do
-		data = data..tostring(v).." "
-	end
+function STMMemoryLog:send_data(event)
+	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = table.concat(self.measurements, " ")})
+	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
+	self.scheduler:add_event(event)
 	-- assign nil values instead of setting measurements = {}
 	-- this is cleaner and conserves memory
 	for i,v in ipairs(self.measurements) do
 		self.measurements[i] = nil
 	end
-	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = data})
-	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
-	self.scheduler:add_event(event)
 end
 
-function STMQueueLength:new(id, scheduler)
+function STMMemoryLog:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
 	o.data = {id = id, state = IDLE}
@@ -67,7 +58,7 @@ function STMQueueLength:new(id, scheduler)
 	return o
 end
 
-function STMQueueLength:fire()
+function STMMemoryLog:fire()
 	while(true) do
 		local event = self.scheduler:get_active_event()
 		local current_state = self:state()
@@ -95,7 +86,6 @@ function STMQueueLength:fire()
 				self:send_data(nil)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
-
 			elseif event:type() == self.events.STOP then
 				self:set_state(IDLE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
@@ -111,4 +101,4 @@ function STMQueueLength:fire()
 	end
 end
 
-return STMQueueLength
+return STMMemoryLog

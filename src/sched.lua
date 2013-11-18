@@ -1,9 +1,5 @@
--- assume modules are loaded by main
-
---local StateMachine = require "stm"
-
 local DESKTOP_TIMEOUT = 10e10
-local CONTROLLER_TIMEOUT = 5000000
+local CONTROLLER_TIMEOUT = 300000000
 
 Scheduler = {}
 
@@ -130,13 +126,11 @@ function Scheduler:run()
 	-- TODO: passive waiting if no events/timers?
 	local success, status, state_machine
 	local start = self.time()
-	local times = {}
 
 	while(true) do	
 		
 		if start+self.timeout < self.time() then -- terminate after timeout
 			print("Ran for 60 sec, terminating...")
-			print(self.average(times))
 			break
 		end
 		
@@ -158,15 +152,9 @@ function Scheduler:run()
 		local event = self:get_next_event()
 		if event then
 			--print("Event received!")
-			local stm_start, delta
 			state_machine = self.state_machine_list[event:state_machine_id()]
 			self:set_active_event(event)
-			stm_start = self.time()
 			success, status = coroutine.resume(state_machine.run, state_machine)
-			if event:type() == 4 then
-				delta = self.time()-stm_start
-				table.insert(times, delta)
-			end
 			if not success then
 				print("Success: "..tostring(success)..", status: "..status)
 				self:remove_state_machine(state_machine)

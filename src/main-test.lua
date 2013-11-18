@@ -3,12 +3,12 @@ package.path = "/wo/?.lua;"..package.path
 print("step: "..collectgarbage("setstepmul", 600))
 --print("pause: "..collectgarbage("setpause", 110))
 
-StateMachine = require "stm"
-Scheduler = require "sched"
-Event = require "event"
-Timer = require "timer"
-Message = require "msg"
-STMBusyWork = require "stm-busy"
+require "stm"
+require "sched"
+require "event"
+require "timer"
+require "msg"
+require "stm-busy"
 
 local scheduler = Scheduler:new(Scheduler.type.CONTROLLER)
 

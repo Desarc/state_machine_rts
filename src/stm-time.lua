@@ -1,5 +1,4 @@
--- assume modules are loaded my main
---local StateMachine = require "stm"
+STMTimeMeasure = StateMachine:new()
 
 local INACTIVE, ACTIVE  = "inactive", "active"
 local T1 = "t1"
@@ -8,8 +7,6 @@ local ASSOCIATE_ID = "stm_l1"
 local ASSOCIATE_EVENT = 2 -- STMLogger.events.LOG
 local CONN_ID = "stm_ec1"
 local CONN_EVENT = STMExternalConnection.events.SEND_MESSAGE
-
-local STMTimeMeasure = StateMachine:new()
 
 STMTimeMeasure.events = {
 	START = 1,
@@ -33,6 +30,7 @@ function STMTimeMeasure:send_data(event)
 	local delta = now - self.previous
 	local queue = self.scheduler:event_queue_length()
 	self.previous = now
+	local mem = collectgarbage("count")
 	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = delta.." "..queue})
 	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
 	self.scheduler:add_event(event)

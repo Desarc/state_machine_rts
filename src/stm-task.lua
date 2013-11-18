@@ -1,24 +1,15 @@
--- assume modules are loaded my main
---local StateMachine = require "stm"
+STMSimpleTask = StateMachine:new()
 
 local INACTIVE, ACTIVE  = "inactive", "active"
 local T1 = "t1"
 local EVENT_INTERVAL = 1*Timer.BASE
-local task_size = 50000
-local ASSOCIATE_ID = "stm_l1"
-local ASSOCIATE_EVENT = 2 -- STMLogger.events.LOG
-local CONN_ID = "stm_ec1"
-local CONN_EVENT = STMExternalConnection.events.SEND_MESSAGE
-local send_counter = 100
+local task_size = 5000
 
 local function simple_task()
 	for i=1,task_size do
 		q = i*i
 	end
 end
-
-
-local STMSimpleTask = StateMachine:new()
 
 STMSimpleTask.events = {
 	START = 1,
