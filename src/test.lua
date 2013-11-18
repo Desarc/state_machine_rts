@@ -1,3 +1,5 @@
+package.path = "/wo/?.lua;"..package.path
+
 --[[local task_sizes = {10, 50, 100, 500, 1000, 5000, 10000, 50000}
 local task_repeats = {1, 50, 100, 500}
 local measurements = 10
@@ -36,7 +38,7 @@ for i=1,table.getn(task_repeats) do
 			end
 
 			local delta = tmr.read(tmr.SYS_TIMER) - start_time
-			table.insert(time, delta)
+			table.insert(deltas, delta)
 		end
 		print(tostring(current_size).."/"..tostring(current_repeats)..": "..tostring(average()))
 		for i,v in ipairs(deltas) do
@@ -91,7 +93,9 @@ o.run = function ()
 		end
 	end
 end]]
-print("step: "..collectgarbage("setstepmul", 200))
+require "msg"
+
+print("step: "..collectgarbage("setstepmul", 600))
 
 local function connect()
 	local host_ip_str = "192.168.100.20"
@@ -103,20 +107,20 @@ local function connect()
 
 	if err ~= 0 then
 		print("Connect error: " .. err)
-		self.print_error(err)
-		return false
+		return nil
 	else
 		print("Connected to " .. host_ip_str .. "!")
-		self.socket = socket
-		return true
+		return socket
 	end
 end
 
+local socket = connect()
 
 local function send_data(data)
-	local out_data = "stm_id:stm_l1;event_type:2;user_data:"..data
+	local message = Message:new({stm_id = "stm_l1", event_type = 2, user_data = data})
+	local out_data = message:serialize()
 	print("Sending data...")
-	local res, err = net.send(self.socket, out_data)
+	local res, err = net.send(socket, out_data)
 	if err ~= 0 then
 		return res, err
 	end
@@ -124,22 +128,10 @@ end
 
 local task_size = 500
 local task_repeats = 20
-local measurements = 10
+local no_measurements = 10
+local run_time = 300
 
-local deltas = {}
-
-local start_time = 0
-
-local function average()
-	local sum = 0
-	local count = 0
-	for i,v in ipairs(deltas) do
-		sum = sum + v
-		count = i
-	end
-	local average = sum/count
-	return average
-end
+local measurements = {}
 
 local function simple_task()
 	for i=1,task_size do
@@ -147,21 +139,18 @@ local function simple_task()
 	end
 end
 
-connect()
+for i=1,run_time do
+	for k=1,no_measurements do
 
-for k=1,measurements do
-	start_time = tmr.read(tmr.SYS_TIMER)
+		for l=1,task_repeats do
+			simple_task()
+		end
 
-	for l=1,current_repeats do
-		simple_task()
+		local mem = collectgarbage("count")
+		table.insert(measurements, mem)
 	end
-
-	local delta = tmr.read(tmr.SYS_TIMER) - start_time
-	table.insert(time, delta)
-end
-print(tostring(current_size).."/"..tostring(current_repeats)..": "..tostring(average()))
-local mem = collectgarbage("count")
-send_data(mem)
-for i,v in ipairs(deltas) do
-	deltas[i] = nil
+	send_data(table.concat(measurements, " "))
+	for j,v in ipairs(measurements) do
+		measurements[j] = nil
+	end
 end
