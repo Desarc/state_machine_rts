@@ -56,28 +56,7 @@ function StateMachine:set_timer(timer, id, expires, event)
 	return timer
 end
 
-function StateMachine:to_string()
-	return tostring(self:id())..": "..tostring(self:get_state())
-end
-
--- StateMachine:new()
--- function for creating a new StateMachine object (constructor).
--- subclass constructors should be in the following format:
---[[
-
-	SomeStateMachine = StateMachine:new()
-
-	function SomeStateMachine:new(id, scheduler)
-		local o = {}
-		setmetatable(o, { __index = self})				-- inherit functions from parent object
-		o.data = {id = id, state = <initial_state>}		-- create a table for "private" variables and data
-		o.scheduler = scheduler							-- make a reference to the responsible scheduler (e.g. for timer handling)
-		scheduler:add_state_machine(o)					-- add this StateMachine instance to scheduler's list
-		return o
-	end
-
---]]
-function StateMachine:new()
+sfunction StateMachine:new()
 	local o = {}
 	setmetatable(o, { __index = self })
 	return o
