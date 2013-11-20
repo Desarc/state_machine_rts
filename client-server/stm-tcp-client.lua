@@ -3,11 +3,7 @@ local Message = require "msg"
 local Event = require "event"
 local Socket = require "socket"
 
-local CONNECTED, DISCONNECTED, WAITING_REPLY = "connected", "disconnected", "waiting_reply"
-local READ_TIMEOUT = nil
---local READ_TIMEOUT = 10000*Timer.BASE
-local SEND_TIMEOUT = 10000*Timer.BASE
-
+local CONNECTED, DISCONNECTED, WAITING_REPLY = 1, 2, 3
 
 local STMTcpClient = StateMachine:new()
 
@@ -18,50 +14,46 @@ STMTcpClient.events = {
 	RECEIVE = 4,
 }
 
-function STMTcpClient:create_socket()
-	print("Creating socket...")
-	local server = assert(Socket.bind("192.168.100.20", 50001))
-	local ip, port = server:getsockname()
-	print("Host IP: "..tostring(ip)..", port: "..tostring(port))
-	self.client = server:accept()
+function STMTcpClient:connect()
+	local socket = Socket.tcp()
+	self.client = assert(socket.connect("127.0.0.1", 50000))
+	local ip, port = self.client:getsockname()
 	print("Connected!")
+	print("Client IP: "..tostring(ip)..", port: "..tostring(port))
 	local rip, rport = self.client:getpeername()
-	print("Client IP: "..tostring(rip)..", port: "..tostring(rport))
+	print("Host IP: "..tostring(rip)..", port: "..tostring(rport))
 	self.client:setoption('keepalive', true)
 end
 
-function STMTcpClient:read_socket()
-	self.client:settimeout(READ_TIMEOUT)
+function STMTcpClient:disconnect()
+	self.client:close()
+end
+
+function STMTcpClient:receive_reply()
 	local line, err = self.client:receive('*l')
 	if line == nil then
 		print(err)
 		return false
 	else
 		local message = Message.deserialize(line)
-		local event = message:generate_event()
+		local event = message.generate_event()
 		if event then
 			print("Reply received!")
-			self.scheduler:add_event(event)
+			self.scheduler().add_event(event)
 		end
 		return true
 	end
 end
 
-function STMTcpClient:send_message(message)
-	local data = message:serialize()
-	self.client:settimeout(SEND_TIMEOUT)
-	local success, err = self.client:send(data)
+function STMTcpClient:send_request(request)
+	local out_data = request.serialize()
+	local success, err = self.client:send(out_data)
 	if success == nil then
 		print(err)
 		return err
 	else
 		return nil
 	end
-end
-
-function STMEventGenerator:schedule_event()
-	local event = Event:new(self.id(), self.events.RECEIVE)
-	self.scheduler().add_event(event)
 end
 
 function STMTcpClient:new(id, scheduler)
@@ -98,7 +90,7 @@ function STMTcpClient:fire()
 		if current_state == DISCONNECTED then
 			
 			if event.type() == self.events.CONNECT then
-				self:create_socket()
+				self:connect()
 				self.set_state(CONNECTED)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -109,17 +101,14 @@ function STMTcpClient:fire()
 		elseif current_state == CONNECTED then
 
 			if event.type() == self.events.SEND then
-				local err = self:send_message(event.get_data())
-				if err == nil then
-					self.set_state(WAITING_REPLY)
-					self:schedule_receive()
-					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				self:send_request(event.get_data())
+				self:schedule_receive()
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
-				else
-					self.client:close()
-					self.set_state(DISCONNECTED)
-					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-				end
+			elseif event.type() == self.events.DISCONNECT then
+				self:disconnect()
+				self.set_state(DISCONNECTED)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)			
@@ -128,14 +117,9 @@ function STMTcpClient:fire()
 		elseif current_state == WAITING_REPLY then
 
 			if event.type() == self.events.RECEIVE then
-				if self:read_socket() then
-					self.set_state(CONNECTED)
-					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-				else
-					self.client:close()
-					self.set_state(DISCONNECTED)
-					coroutine.yield(StateMachine.TERMINATE_SYSTEM)
-				end
+				self:receive_reply()
+				self.set_state(CONNECTED)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)

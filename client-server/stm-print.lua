@@ -1,15 +1,14 @@
-local StateMachine = require "state_machine"
-local Event = require "event"
+local StateMachine = require "stm"
 
-local ACTIVE = "active"
+local ACTIVE = 1
 
-local PrintMessageSTM = StateMachine:new()
+local STMPrintMessage = StateMachine:new()
 
-PrintMessageSTM.events = {
+STMPrintMessage.events = {
 	PRINT = 1,
 }
 
-function PrintMessageSTM:new(id, scheduler)
+function STMPrintMessage:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
 	local data = {id = id, state = ACTIVE}
@@ -35,7 +34,7 @@ function PrintMessageSTM:new(id, scheduler)
 	return o
 end
 
-function PrintMessageSTM:fire()
+function STMPrintMessage:fire()
 	while(true) do
 		local event = self.scheduler().get_active_event()
 		local current_state = self.state()
@@ -55,4 +54,4 @@ function PrintMessageSTM:fire()
 	end
 end
 
-return PrintMessageSTM
+return STMPrintMessage
