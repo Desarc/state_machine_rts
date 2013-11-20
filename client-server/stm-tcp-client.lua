@@ -15,8 +15,8 @@ STMTcpClient.events = {
 }
 
 function STMTcpClient:connect()
-	local socket = Socket.tcp()
-	self.client = assert(socket.connect("127.0.0.1", 50000))
+	self.client = Socket.tcp()
+	assert(self.client:connect("127.0.0.1", 50000))
 	local ip, port = self.client:getsockname()
 	print("Connected!")
 	print("Client IP: "..tostring(ip)..", port: "..tostring(port))
@@ -54,6 +54,11 @@ function STMTcpClient:send_request(request)
 	else
 		return nil
 	end
+end
+
+function STMTcpClient:schedule_receive()
+	local event = Event:new(event, self.id(), self.events.RECEIVE)
+	self.scheduler().add_event(event)
 end
 
 function STMTcpClient:new(id, scheduler)

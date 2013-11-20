@@ -26,7 +26,7 @@ function STMTcpServer:connect()
 	self.client:setoption('keepalive', true)
 end
 
-function STMTcpClient:disconnect()
+function STMTcpServer:disconnect()
 	self.client:close()
 end
 
@@ -109,8 +109,8 @@ function STMTcpServer:fire()
 		
 		elseif current_state == CONNECTED then
 
-			elseif event.type() == self.events.RECEIVE then
-				self:receive_request
+			if event.type() == self.events.RECEIVE then
+				self:receive_request()
 				self.set_state(WAITING_REPLY)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 

@@ -1,6 +1,7 @@
 local StateMachine = require "stm"
 local Timer = require "timer"
 local Event = require "event"
+local Message = require "msg"
 local STMTcpClient = require "stm-tcp-client"
 local STMRequestHandler = require "stm-req"
 
