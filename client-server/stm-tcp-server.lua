@@ -41,7 +41,7 @@ function STMTcpServer:receive_request()
 		local event = message.generate_event()
 		if event then
 			print("Request received!")
-			self.scheduler:add_event(event)
+			self.scheduler().add_event(event)
 		end
 		return true
 	end
@@ -60,7 +60,7 @@ function STMTcpServer:send_reply(reply)
 end
 
 function STMTcpServer:schedule_receive()
-	local event = Event:new(event, self.id(), self.events.RECEIVE)
+	local event = Event:new(self.id(), self.events.RECEIVE)
 	self.scheduler().add_event(event)
 end
 

@@ -87,7 +87,7 @@ function STMEventGenerator:fire()
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			
 			elseif event.type() == self.events.STOP then
-				self.stop_timer(T1)
+				self:stop_timer(T1)
 				self.set_state(IDLE)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			

@@ -1,3 +1,5 @@
+local Event = require "event"
+
 local Message = {}
 
 function Message.deserialize(content)

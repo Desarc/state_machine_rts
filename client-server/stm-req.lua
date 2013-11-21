@@ -1,14 +1,14 @@
 local StateMachine = require "stm"
 local Event = require "event"
 local Message = require "msg"
-local STMTcpClient = require "stm-tcp-client"
+local STMTcpServer = require "stm-tcp-server"
 local STMPrintMessage = require "stm-print"
 
 local ACTIVE = 1
 local EVENT_TARGET = "stm_ts1"
-local EVENT_TYPE = STMTcpClient.events.SEND
+local EVENT_TYPE = STMTcpServer.events.SEND
 local ASSOCIATE_ID = "stm_pm1"
-local ASSOCIATE_EVENT = STMPrintMessage.events.REQUEST
+local ASSOCIATE_EVENT = STMPrintMessage.events.PRINT
 
 local STMRequestHandler = StateMachine:new()
 
@@ -57,7 +57,7 @@ function STMRequestHandler:fire()
 		local current_state = self.state()
 
 		if current_state == ACTIVE then
-			if event.type() == self.events.PRINT then
+			if event.type() == self.events.REQUEST then
 				self:handle_request(event.get_data())
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			

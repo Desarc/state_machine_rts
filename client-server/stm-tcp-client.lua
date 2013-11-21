@@ -30,6 +30,7 @@ function STMTcpClient:disconnect()
 end
 
 function STMTcpClient:receive_reply()
+	print("Waiting for reply...")
 	local line, err = self.client:receive('*l')
 	if line == nil then
 		print(err)
@@ -46,6 +47,7 @@ function STMTcpClient:receive_reply()
 end
 
 function STMTcpClient:send_request(request)
+	print("Sending request...")
 	local out_data = request.serialize()
 	local success, err = self.client:send(out_data)
 	if success == nil then
@@ -57,7 +59,7 @@ function STMTcpClient:send_request(request)
 end
 
 function STMTcpClient:schedule_receive()
-	local event = Event:new(event, self.id(), self.events.RECEIVE)
+	local event = Event:new(self.id(), self.events.RECEIVE)
 	self.scheduler().add_event(event)
 end
 
@@ -108,6 +110,7 @@ function STMTcpClient:fire()
 			if event.type() == self.events.SEND then
 				self:send_request(event.get_data())
 				self:schedule_receive()
+				self.set_state(WAITING_REPLY)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event.type() == self.events.DISCONNECT then
