@@ -1,3 +1,5 @@
+package.path = "/wo/?.lua;"..package.path
+
 local Scheduler = require "sched"
 local Event = require "event"
 local STMTrafficLight = require "stm-light"

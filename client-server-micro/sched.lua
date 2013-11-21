@@ -2,15 +2,24 @@ local StateMachine = require "stm"
 
 local Scheduler = {}
 
+Scheduler.type = {
+	DESKTOP = 1,
+	CONTROLLER = 2,
+}
+
+local function controller_time()
+	return tmr.read(tmr.SYS_TIMER)
+end
+
+local function desktop_time()
+	return os.time()
+end
+
 local function timers_cmp(t1, t2)
 	if t1.expires() < t2.expires() then return true end
 end
 
-local function time()
-	return os.time()
-end
-
-function Scheduler:new()
+function Scheduler:new(system_type)
 	local o = {}
 	setmetatable(o, { __index = self })
 	local state_machine_list = {}
@@ -18,8 +27,10 @@ function Scheduler:new()
 	local timer_queue = {}
 	local active_event
 
-	o.time = function ()
-		return time()
+	if system_type == self.type.DESKTOP then
+		o.time = desktop_time
+	elseif system_type == self.type.CONTROLLER then
+		o.time = controller_time
 	end
 
 	o.add_state_machine = function (state_machine)
@@ -71,7 +82,7 @@ function Scheduler:new()
 	end
 
 	o.check_timers = function ()
-		local now = time()
+		local now = o.time()
 		if timer_queue[1] then
 			if timer_queue[1].expires() < now then return true end
 		end
@@ -79,7 +90,7 @@ function Scheduler:new()
 	end
 
 	o.get_next_timeout = function ()
-		local now = time()
+		local now = o.time()
 		if timer_queue[1] then
 			if timer_queue[1].expires() < now then return table.remove(timer_queue, 1) end
 		end

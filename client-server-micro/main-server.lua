@@ -3,7 +3,7 @@ local Event = require "event"
 local STMTcpServer = require "stm-tcp-server"
 local STMRequesthandler = require "stm-req"
 
-local scheduler = Scheduler:new()
+local scheduler = Scheduler:new(Scheduler.type.DESKTOP)
 
 local stm_ts1 = STMTcpServer:new("stm_ts1", scheduler)
 

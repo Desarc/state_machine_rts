@@ -4,7 +4,6 @@ local Message = require "msg"
 local Socket = require "socket"
 
 local CONNECTED, DISCONNECTED, WAITING_REPLY = 1, 2, 3
-local T1 = "t1"
 
 local STMTcpServer = StateMachine:new()
 

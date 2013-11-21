@@ -1,5 +1,5 @@
 local Timer = {
-	Timer.BASE = 1000,
+	BASE = 1000,
 }
 
 local function time()

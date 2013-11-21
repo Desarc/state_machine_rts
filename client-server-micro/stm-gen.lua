@@ -3,15 +3,14 @@ local Timer = require "timer"
 local Event = require "event"
 local Message = require "msg"
 local STMTcpClient = require "stm-tcp-client"
-local STMRequestHandler = require "stm-req"
 
 local IDLE, ACTIVE  = 1, 2
 local T1 = "t1"
-local EVENT_INTERVAL = 1
+local EVENT_INTERVAL = 1000*Timer.BASE
 local EVENT_TARGET = "stm_tc1"
 local EVENT_TYPE = STMTcpClient.events.SEND
 local ASSOCIATE_ID = "stm_rh1"
-local ASSOCIATE_EVENT = STMRequestHandler.events.REQUEST
+local ASSOCIATE_EVENT = 1 --STMRequestHandler.events.REQUEST
 
 local STMEventGenerator = StateMachine:new()
 

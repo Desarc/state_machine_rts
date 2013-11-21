@@ -1,7 +1,6 @@
 local StateMachine = require "stm"
 local Message = require "msg"
 local Event = require "event"
-local Socket = require "socket"
 
 local CONNECTED, DISCONNECTED, WAITING_REPLY = 1, 2, 3
 
@@ -15,46 +14,49 @@ STMTcpClient.events = {
 }
 
 function STMTcpClient:connect()
-	self.client = Socket.tcp()
-	assert(self.client:connect("127.0.0.1", 50000))
-	local ip, port = self.client:getsockname()
-	print("Connected!")
-	print("Client IP: "..tostring(ip)..", port: "..tostring(port))
-	local rip, rport = self.client:getpeername()
-	print("Host IP: "..tostring(rip)..", port: "..tostring(rport))
-	self.client:setoption('keepalive', true)
+	local host_ip_str = "192.168.100.20"
+	local host_ip = net.packip(host_ip_str)
+	local socket = net.socket(net.SOCK_STREAM)
+	local host_port = 50000
+
+	local err = net.connect(socket, host_ip, host_port)
+
+	if err ~= 0 then
+		print("Connect error: " .. err)
+		self.print_error(err)
+		return false
+	else
+		print("Connected to " .. host_ip_str .. "!")
+		self.socket = socket
+		return true
+	end
 end
 
 function STMTcpClient:disconnect()
-	self.client:close()
+	net.close(self.socket)
 end
 
 function STMTcpClient:receive_reply()
 	--print("Waiting for reply...")
-	local line, err = self.client:receive('*l')
-	if line == nil then
-		print(err)
-		return false
-	else
-		local message = Message.deserialize(line)
+	local data, err = net.recv(self.socket, "*l")
+	if err ~= 0 then
+		return err
+	elseif data ~= 0 then
+		local message = Message.deserialize(data)
 		local event = message.generate_event()
 		if event then
 			--print("Reply received!")
 			self.scheduler().add_event(event)
 		end
-		return true
 	end
 end
 
 function STMTcpClient:send_request(request)
-	--print("Sending request...")
 	local out_data = request.serialize()
-	local success, err = self.client:send(out_data)
-	if success == nil then
-		print(err)
-		return err
-	else
-		return nil
+	--print("Sending request...")
+	local res, err = net.send(self.socket, out_data)
+	if err ~= 0 then
+		return res, err
 	end
 end
 

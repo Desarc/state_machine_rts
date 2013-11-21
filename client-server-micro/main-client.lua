@@ -1,10 +1,12 @@
+package.path = "/wo/?.lua;"..package.path
+
 local Scheduler = require "sched"
 local Event = require "event"
 local STMTcpClient = require "stm-tcp-client"
 local STMEventGenerator = require "stm-gen"
 local STMPrintMessage = require "stm-print"
 
-local scheduler = Scheduler:new()
+local scheduler = Scheduler:new(Scheduler.type.CONTROLLER)
 
 local stm_tc1 = STMTcpClient:new("stm_tc1", scheduler)
 

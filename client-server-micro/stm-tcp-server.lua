@@ -4,7 +4,6 @@ local Message = require "msg"
 local Socket = require "socket"
 
 local CONNECTED, DISCONNECTED, WAITING_REPLY = 1, 2, 3
-local T1 = "t1"
 
 local STMTcpServer = StateMachine:new()
 
@@ -16,7 +15,7 @@ STMTcpServer.events = {
 }
 
 function STMTcpServer:connect()
-	local server = assert(Socket.bind("127.0.0.1", 50000))
+	local server = assert(Socket.bind("192.168.100.20", 50000))
 	local ip, port = server:getsockname()
 	print("Host IP: "..tostring(ip)..", port: "..tostring(port))
 	self.client = server:accept()
