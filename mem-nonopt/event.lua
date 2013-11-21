@@ -1,4 +1,4 @@
-local Event = {}
+Event = {}
 
 function Event:state_machine_id()
 	return self.data.state_machine_id
@@ -26,5 +26,3 @@ function Event:new(state_machine_id, event_type, user_data)
 	o.data = {state_machine_id = state_machine_id, event_type = event_type, user_data = user_data}
 	return o
 end
-
-return Event

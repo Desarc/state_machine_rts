@@ -1,12 +1,5 @@
-local DESKTOP_TIMEOUT = 10e10
-local CONTROLLER_TIMEOUT = 30000000
-
-local Scheduler = {}
-
-Scheduler.type = {
-	DESKTOP = 1,
-	CONTROLLER = 2,
-}
+local DESKTOP_TIMEOUT = 10e10*Timer.BASE
+local CONTROLLER_TIMEOUT = 30000*Timer.BASE
 
 local function controller_time()
 	return tmr.read(tmr.SYS_TIMER)
@@ -15,6 +8,13 @@ end
 local function desktop_time()
 	return os.time()
 end
+
+Scheduler = {}
+
+Scheduler.type = {
+	DESKTOP = 1,
+	CONTROLLER = 2,
+}
 
 function Scheduler:add_state_machine(state_machine)
 	state_machine.run = coroutine.create(state_machine.fire)
@@ -52,10 +52,6 @@ function Scheduler:timer_queue_length()
 	return table.getn(self.timer_queue)
 end
 
-function Scheduler.time()
-	return tmr.read(tmr.SYS_TIMER)
-end
-
 local function timers_cmp(t1, t2)
 	if t1:expires() < t2:expires() then return true end
 end
@@ -85,10 +81,7 @@ function Scheduler:check_timers()
 end
 
 function Scheduler:get_next_timeout()
-	local now = self.time()
-	if self.timer_queue[1] then
-		if self.timer_queue[1]:expires() < now then return table.remove(self.timer_queue, 1) end
-	end
+	return table.remove(self.timer_queue, 1)
 end
 
 function Scheduler:set_active_event(event)
@@ -122,9 +115,8 @@ function Scheduler:run()
 
 	while(true) do	
 		local timer, event
-		
-		if start+self.timeout < self.time() then -- terminate after a timeout
-			print("Ran for 60 sec, terminating...")
+
+		if start+self.timeout < self.time() then -- terminate after timeout
 			break
 		end
 		
@@ -158,5 +150,3 @@ function Scheduler:run()
 	end
 	print("Terminating system...")
 end
-
-return Scheduler

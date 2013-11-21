@@ -1,6 +1,6 @@
 local Socket = require "socket"
 
-local CONNECTED, DISCONNECTED, WAITING_REPLY = 1, 2, 3
+local CONNECTED, DISCONNECTED = 1, 2
 
 STMTcpServer = StateMachine:new()
 
@@ -90,7 +90,7 @@ function STMTcpServer:fire()
 
 			if event:type() == self.events.RECEIVE then
 				self:receive_request()
-				self:set_state(WAITING_REPLY)
+				self:schedule_receive()
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.DISCONNECT then
@@ -102,18 +102,6 @@ function STMTcpServer:fire()
 				coroutine.yield(StateMachine.DISCARD_EVENT)			
 			end
 
-		elseif current_state == WAITING_REPLY then
-
-			if event:type() == self.events.SEND then
-				self:send_reply(event:get_data())
-				self:schedule_receive()
-				self:set_state(CONNECTED)
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-			
-			else
-				coroutine.yield(StateMachine.DISCARD_EVENT)
-			end
-		
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end

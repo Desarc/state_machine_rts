@@ -55,10 +55,6 @@ function Scheduler:timer_queue_length()
 	return table.getn(self.timer_queue)
 end
 
-function Scheduler.time()
-	return tmr.read(tmr.SYS_TIMER)
-end
-
 local function timers_cmp(t1, t2)
 	if t1:expires() < t2:expires() then return true end
 end

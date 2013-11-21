@@ -24,5 +24,3 @@ function Timer:new(id, expires, event)
 	o.data = {id = id, expires = self.time()+expires, event = event}
 	return o
 end
-
-return Timer

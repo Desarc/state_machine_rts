@@ -2,13 +2,11 @@ package.path = "/wo/?.lua;"..package.path
 
 require "msg"
 
-print("step: "..collectgarbage("setstepmul", 200))
-
 local function connect()
 	local host_ip_str = "192.168.100.20"
 	local host_ip = net.packip(host_ip_str)
 	local socket = net.socket(net.SOCK_STREAM)
-	local host_port = 50001
+	local host_port = 50000
 
 	local err = net.connect(socket, host_ip, host_port)
 

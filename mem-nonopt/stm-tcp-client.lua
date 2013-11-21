@@ -1,4 +1,4 @@
-local CONNECTED, DISCONNECTED, WAITING_REPLY = 1, 2, 3
+local CONNECTED, DISCONNECTED= 1, 2
 
 STMTcpClient = StateMachine:new()
 
@@ -89,8 +89,6 @@ function STMTcpClient:fire()
 
 			if event:type() == self.events.SEND then
 				self:send_request(event:get_data())
-				self:schedule_receive()
-				self:set_state(WAITING_REPLY)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			elseif event:type() == self.events.DISCONNECT then
@@ -102,19 +100,10 @@ function STMTcpClient:fire()
 				coroutine.yield(StateMachine.DISCARD_EVENT)			
 			end
 
-		elseif current_state == WAITING_REPLY then
-
-			if event:type() == self.events.RECEIVE then
-				self:receive_reply()
-				self:set_state(CONNECTED)
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
-			
-			else
-				coroutine.yield(StateMachine.DISCARD_EVENT)
-			end
-		
 		else
 			coroutine.yield(StateMachine.DISCARD_EVENT)
 		end
 	end
 end
+
+return STMTcpClient

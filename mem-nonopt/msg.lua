@@ -1,4 +1,4 @@
-local Message = {}
+Message = {}
 
 function Message:serialize()
 	local serialized = ""
@@ -52,5 +52,3 @@ function Message:new(variables)
 	o.data = variables
 	return o
 end
-
-return Message

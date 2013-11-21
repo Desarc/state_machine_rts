@@ -1,10 +1,6 @@
-local StateMachine = require "stm"
-local Event = require "event"
-local Timer = require "timer"
+STMSimpleTask = StateMachine:new()
 
-local STMSimpleTask = StateMachine:new()
-
-local INACTIVE, ACTIVE  = "inactive", "active"
+local IDLE, ACTIVE  = 1, 2
 local T1 = "t1"
 local EVENT_INTERVAL = 1*Timer.BASE
 local task_size = 5000
@@ -30,7 +26,7 @@ end
 function STMSimpleTask:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
-	o.data = {id = id, state = INACTIVE}
+	o.data = {id = id, state = IDLE}
 	o.scheduler = scheduler
 	scheduler:add_state_machine(o)
 	return o
@@ -41,7 +37,7 @@ function STMSimpleTask:fire()
 		local event = self.scheduler:get_active_event()
 		local current_state = self:state()
 
-		if current_state == INACTIVE then
+		if current_state == IDLE then
 			if event:type() == self.events.START then
 				self:schedule_self(T1)
 				self:set_state(ACTIVE)
@@ -67,5 +63,3 @@ function STMSimpleTask:fire()
 	end
 
 end
-
-return STMSimpleTask

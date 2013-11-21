@@ -1,4 +1,4 @@
-local Timer = {
+Timer = {
 	BASE = 1000, -- number of time units for 1ms
 }
 
@@ -24,5 +24,3 @@ function Timer:new(id, expires, event)
 	o.data = {id = id, expires = self.time()+expires, event = event}
 	return o
 end
-
-return Timer
