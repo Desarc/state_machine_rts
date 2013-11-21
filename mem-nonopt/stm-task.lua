@@ -2,8 +2,8 @@ STMSimpleTask = StateMachine:new()
 
 local IDLE, ACTIVE  = 1, 2
 local T1 = "t1"
-local EVENT_INTERVAL = 1*Timer.BASE
-local task_size = 5000
+local EVENT_INTERVAL = 10*Timer.BASE
+local task_size = 500
 
 local function simple_task()
 	for i=1,task_size do

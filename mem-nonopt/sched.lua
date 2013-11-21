@@ -1,5 +1,5 @@
 local DESKTOP_TIMEOUT = 10e10*Timer.BASE
-local CONTROLLER_TIMEOUT = 30000*Timer.BASE
+local CONTROLLER_TIMEOUT = 300000*Timer.BASE
 
 local function controller_time()
 	return tmr.read(tmr.SYS_TIMER)
@@ -117,6 +117,7 @@ function Scheduler:run()
 		local timer, event
 
 		if start+self.timeout < self.time() then -- terminate after timeout
+			print(table.getn(self.event_queue))
 			break
 		end
 		
