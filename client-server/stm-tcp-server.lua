@@ -31,7 +31,7 @@ function STMTcpServer:disconnect()
 end
 
 function STMTcpServer:receive_request()
-	print("Waiting for request...")
+	--print("Waiting for request...")
 	local line, err = self.client:receive('*l')
 	if line == nil then
 		print(err)
@@ -40,7 +40,7 @@ function STMTcpServer:receive_request()
 		local message = Message.deserialize(line)
 		local event = message.generate_event()
 		if event then
-			print("Request received!")
+			--print("Request received!")
 			self.scheduler().add_event(event)
 		end
 		return true
@@ -48,7 +48,7 @@ function STMTcpServer:receive_request()
 end
 
 function STMTcpServer:send_reply(reply)
-	print("Sending reply...")
+	--print("Sending reply...")
 	local out_data = reply.serialize()
 	local success, err = self.client:send(out_data)
 	if success == nil then

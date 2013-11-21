@@ -55,7 +55,9 @@ function STMEventGenerator:schedule_request(timer_no)
 end
 
 function STMEventGenerator:generate_request()
-	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = "Hello!"})
+	local req = "Hello!"
+	print("Sending request: "..req)
+	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = req})
 	local event = Event:new(EVENT_TARGET, EVENT_TYPE, message)
 	self.scheduler().add_event(event)
 end
