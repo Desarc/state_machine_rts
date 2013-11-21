@@ -9,14 +9,8 @@ local function connect()
 	local host_port = 50000
 
 	local err = net.connect(socket, host_ip, host_port)
-
-	if err ~= 0 then
-		print("Connect error: " .. err)
-		return nil
-	else
-		print("Connected to " .. host_ip_str .. "!")
-		return socket
-	end
+	print("Connected to " .. host_ip_str .. "!")
+	return socket
 end
 
 local socket = connect()
@@ -54,8 +48,10 @@ for i=1,run_time do
 		local mem = collectgarbage("count")
 		table.insert(measurements, mem)
 	end
-	send_data(table.concat(measurements, " "))
-	for j in ipairs(measurements) do
-		measurements[j] = nil
+	local data = ""
+	for i,v in ipairs(measurements) do
+		data = data..tostring(v).." "
 	end
+	send_data(data)
+	measurements = {}
 end

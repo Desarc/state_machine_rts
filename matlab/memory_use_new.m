@@ -13,7 +13,7 @@ t2 = [0:length(data2)-1]*dt;
 
 plot(t1, data1, t2, data2)
 title('Dynamic memory use')
-legend('stm', 'nostm')
+legend('With RTS', 'Without RTS')
 xlabel('Time (s)'), ylabel('Memory use (KB)')
 
 fclose(file1);
@@ -27,7 +27,7 @@ avg_nostm = mean(data2);
 averages = [avg_stm, avg_nostm]
 
 [max_stm, i_stm] = max(data1);
-[max_stm, i_nostm] = max(data2);
+[max_nostm, i_nostm] = max(data2);
 
 maxes = [max_stm, max_nostm]
 
