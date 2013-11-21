@@ -127,6 +127,7 @@ function STMTcpServer:fire()
 
 			if event.type() == self.events.SEND then
 				self:send_reply(event.get_data())
+				self:schedule_receive()
 				self.set_state(CONNECTED)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 			
