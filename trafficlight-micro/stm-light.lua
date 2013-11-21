@@ -6,7 +6,9 @@ local STMTrafficLightController = StateMachine:new()
 
 local S0, S1, S2, S3, S4, S5 = 1, 2, 3, 4, 5, 6
 local T1, T2, T3, T4, T5 = "t1", "t2", "t3", "t4", "t5"
-local YELLOW_DELAY, PEDESTRIAN_TIME, SAFE_TIME = 3, 10, 1
+local YELLOW_DELAY = 3000*Timer.BASE
+local PEDESTRIAN_TIME = 10000.Timer.BASE
+local SAFE_TIME = 1000*Timer.BASE
 
 STMTrafficLightController.events = {
 	PEDESTRIAN_BUTTON_PRESSED = 1,
