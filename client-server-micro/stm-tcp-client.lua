@@ -23,7 +23,6 @@ function STMTcpClient:connect()
 
 	if err ~= 0 then
 		print("Connect error: " .. err)
-		self.print_error(err)
 		return false
 	else
 		print("Connected to " .. host_ip_str .. "!")

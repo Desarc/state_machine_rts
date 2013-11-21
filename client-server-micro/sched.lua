@@ -90,10 +90,7 @@ function Scheduler:new(system_type)
 	end
 
 	o.get_next_timeout = function ()
-		local now = o.time()
-		if timer_queue[1] then
-			if timer_queue[1].expires() < now then return table.remove(timer_queue, 1) end
-		end
+		return table.remove(timer_queue, 1)
 	end
 
 	o.set_active_event = function (event)

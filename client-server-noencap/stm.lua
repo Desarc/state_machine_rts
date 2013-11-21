@@ -1,4 +1,4 @@
-local StateMachine = {
+StateMachine = {
 	EXECUTE_TRANSITION = 0,
 	DISCARD_EVENT = 1,
 	TERMINATE_SYSTEM = 2,
@@ -38,5 +38,3 @@ function StateMachine:new()
 	setmetatable(o, { __index = self })
 	return o
 end
-
-return StateMachine

@@ -1,4 +1,4 @@
-local Timer = {
+Timer = {
 	BASE = 1000, -- number of time units for 1ms
 }
 

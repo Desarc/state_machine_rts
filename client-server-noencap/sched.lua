@@ -1,7 +1,4 @@
-local DESKTOP_TIMEOUT = 10e10
-local CONTROLLER_TIMEOUT = 30000000
-
-local Scheduler = {}
+Scheduler = {}
 
 Scheduler.type = {
 	DESKTOP = 1,
@@ -85,10 +82,7 @@ function Scheduler:check_timers()
 end
 
 function Scheduler:get_next_timeout()
-	local now = self.time()
-	if self.timer_queue[1] then
-		if self.timer_queue[1]:expires() < now then return table.remove(self.timer_queue, 1) end
-	end
+	return table.remove(self.timer_queue, 1)
 end
 
 function Scheduler:set_active_event(event)
@@ -107,10 +101,8 @@ function Scheduler:new(system_type)
 	o.timer_queue = {}
 	if system_type == self.type.DESKTOP then
 		o.time = desktop_time
-		o.timeout = DESKTOP_TIMEOUT
 	elseif system_type == self.type.CONTROLLER then
 		o.time = controller_time
-		o.timeout = CONTROLLER_TIMEOUT
 	end
 	return o
 end
@@ -118,15 +110,9 @@ end
 function Scheduler:run()
 	print("Scheduler running.")
 	local success, status, state_machine
-	local start = self.time()
 
 	while(true) do	
 		local timer, event
-		
-		if start+self.timeout < self.time() then -- terminate after a timeout
-			print("Ran for 60 sec, terminating...")
-			break
-		end
 		
 		if self:check_timers() then
 			timer = self:get_next_timeout()
@@ -158,5 +144,3 @@ function Scheduler:run()
 	end
 	print("Terminating system...")
 end
-
-return Scheduler
