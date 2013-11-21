@@ -43,7 +43,7 @@ function STMMemoryLog:send_data(event)
 	self.scheduler:add_event(event)
 	-- assign nil values instead of setting measurements = {}
 	-- this is cleaner and conserves memory
-	for i,v in ipairs(self.measurements) do
+	for i in ipairs(self.measurements) do
 		self.measurements[i] = nil
 	end
 end

@@ -57,7 +57,7 @@ for i=1,run_time do
 		table.insert(measurements, mem)
 	end
 	send_data(table.concat(measurements, " "))
-	for j,v in ipairs(measurements) do
+	for j in ipairs(measurements) do
 		measurements[j] = nil
 	end
 end

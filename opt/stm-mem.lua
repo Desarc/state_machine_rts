@@ -41,7 +41,7 @@ function STMMemoryLog:send_data(event)
 	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = table.concat(self.measurements, " ")})
 	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
 	self.scheduler:add_event(event)
-	for i,v in ipairs(self.measurements) do
+	for i in ipairs(self.measurements) do
 		self.measurements[i] = nil
 	end
 end
