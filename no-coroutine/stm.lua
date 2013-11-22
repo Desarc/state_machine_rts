@@ -8,9 +8,9 @@ function StateMachine:fire()
 	error("'fire' function not yet implemented for this state machine!")
 end
 
-function StateMachine.create_event(event, id, type, data)
+function StateMachine.create_event(event, state_machine_id, type, data)
 	if event then
-		event.id = id
+		event.state_machine_id = state_machine_id
 		event.type = type
 		event.data = data
 	else

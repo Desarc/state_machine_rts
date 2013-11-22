@@ -13,7 +13,7 @@ local stm_ts1 = STMTcpServer:new("stm_ts1", scheduler)
 
 local stm_l1 = STMLogger:new("stm_l1", scheduler)
 
-local event1 = Event:new(stm_l1.id, STMLogger.events.START, "../matlab/mem_nostm_opt.txt")
+local event1 = Event:new(stm_l1.id, STMLogger.events.START, "../matlab/mem_nostm_gc800.txt")
 
 local event2 = Event:new(stm_ts1.id, STMTcpServer.events.CONNECT)
 

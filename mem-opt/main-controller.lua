@@ -1,5 +1,8 @@
 package.path = "/wo/?.lua;"..package.path
 
+--print(collectgarbage("setpause", 110))
+print(collectgarbage("setstepmul", 1000))
+
 require "timer"
 require "sched"
 require "event"

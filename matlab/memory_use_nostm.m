@@ -1,10 +1,12 @@
 figure('Name', 'dynamic_memory_use_nostm')
 hold off
-file1 = fopen('mem_gc200_nostm.txt', 'r');
-file2 = fopen('mem_gc300_nostm.txt', 'r');
-file3 = fopen('mem_gc400_nostm.txt', 'r');
-file4 = fopen('mem_gc500_nostm.txt', 'r');
-file5 = fopen('mem_gc600_nostm.txt', 'r');
+
+file1 = fopen('mem_nostm_gc200.txt', 'r');
+file2 = fopen('mem_nostm_gc400.txt', 'r');
+file3 = fopen('mem_nostm_gc600.txt', 'r');
+file4 = fopen('mem_nostm_gc800.txt', 'r');
+file5 = fopen('mem_nostm_gc1000.txt', 'r');
+
 data1 = fscanf(file1, '%f');
 data2 = fscanf(file2, '%f');
 data3 = fscanf(file3, '%f');
@@ -20,7 +22,7 @@ t5 = [0:length(data5)-1]*dt;
 
 plot(t1, data1, t2, data2, t3, data3, t4, data4, t5, data5)
 title('Dynamic memory use')
-legend('Step multiplier = 200 (default)', 'Step multiplier = 300', 'Step multiplier = 400', 'Step multiplier = 500', 'Step multiplier = 600')
+legend('Step multiplier = 200 (default)', 'Step multiplier = 400', 'Step multiplier = 600', 'Step multiplier = 800', 'Step multiplier = 1000')
 xlabel('Time (s)'), ylabel('Memory use (KB)')
 
 fclose(file1);

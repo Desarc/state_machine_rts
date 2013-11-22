@@ -1,26 +1,29 @@
 figure('Name', 'dynamic_memory_use_opt')
 hold off
-file1 = fopen('mem_gc200_opt.txt', 'r');
-file2 = fopen('mem_gc300_opt.txt', 'r');
-file3 = fopen('mem_gc400_opt.txt', 'r');
-file4 = fopen('mem_gc500_opt.txt', 'r');
-file5 = fopen('mem_gc600_opt.txt', 'r');
+file1 = fopen('mem_stm_gc200.txt', 'r');
+file2 = fopen('mem_stm_gc400.txt', 'r');
+file3 = fopen('mem_stm_gc600.txt', 'r');
+file4 = fopen('mem_stm_gc800.txt', 'r');
+file5 = fopen('mem_stm_gc1000.txt', 'r');
 data1 = fscanf(file1, '%f');
 data2 = fscanf(file2, '%f');
 data3 = fscanf(file3, '%f');
 data4 = fscanf(file4, '%f');
 data5 = fscanf(file5, '%f');
 
-dt = 0.1;
-t1 = [0:length(data1)-1]*dt;
-t2 = [0:length(data2)-1]*dt;
-t3 = [0:length(data3)-1]*dt;
-t4 = [0:length(data4)-1]*dt;
-t5 = [0:length(data5)-1]*dt;
 
-plot(t1, data1, t2, data2, t3, data3, t4, data4, t5, data5)
+dt = 0.1;
+t = [0:2490]*dt;
+
+data1 = data1(1:length(t));
+data2 = data2(1:length(t));
+data3 = data3(1:length(t));
+data4 = data4(1:length(t));
+data5 = data5(1:length(t));
+
+plot(t, data1, t, data2, t, data3, t, data4, t, data5)
 title('Dynamic memory use')
-legend('Step multiplier = 200 (default)', 'Step multiplier = 300', 'Step multiplier = 400', 'Step multiplier = 500', 'Step multiplier = 600')
+legend('Step multiplier = 200 (default)', 'Step multiplier = 400', 'Step multiplier = 600', 'Step multiplier = 800', 'Step multiplier = 1000')
 xlabel('Time (s)'), ylabel('Memory use (KB)')
 
 fclose(file1);

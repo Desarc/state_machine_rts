@@ -1,5 +1,7 @@
 package.path = "/wo/?.lua;"..package.path
 
+print(collectgarbage("setstepmul", 800))
+
 require "msg"
 
 local function connect()
