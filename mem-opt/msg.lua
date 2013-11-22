@@ -3,9 +3,9 @@ Message = {}
 function Message:serialize()
 	local serialized = {}
 	local count = 1
-	for i,v in pairs(self.data) do
+	for k,v in pairs(self.data) do
 		if v ~= nil then
-			serialized[count] = tostring(i)
+			serialized[count] = tostring(k)
 			count = count + 1
 			serialized[count] = ":"
 			count = count + 1
@@ -61,5 +61,3 @@ function Message:new(variables)
 	o.data = variables
 	return o
 end
-
-return Message

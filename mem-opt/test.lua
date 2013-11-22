@@ -27,6 +27,7 @@ local no_measurements = 10
 local run_time = 300
 
 local measurements = {}
+local count = 1
 
 local function simple_task()
 	for i=1,task_size do
@@ -42,12 +43,12 @@ for i=1,run_time do
 		end
 
 		local mem = collectgarbage("count")
-		table.insert(measurements, mem)
+		measurements[count] = mem
+		count = count + 1
 	end
-	local data = ""
-	for i,v in ipairs(measurements) do
-		data = data..tostring(v).." "
+	send_data(table.concat(measurements, " ")
+	for i in ipairs(measurements) do
+		measurements[i] = nil
 	end
-	send_data(data)
-	measurements = {}
+	count = 1
 end
