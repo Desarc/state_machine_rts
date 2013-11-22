@@ -43,7 +43,7 @@ for i=1,table.getn(task_repeats) do
 			table.insert(deltas, delta)
 		end
 		print(tostring(current_size).."/"..tostring(current_repeats)..": "..tostring(average()))
-		for i,v in ipairs(deltas) do
+		for i in ipairs(deltas) do
 			deltas[i] = nil
 		end
 	end

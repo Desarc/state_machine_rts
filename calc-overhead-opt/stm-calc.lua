@@ -49,7 +49,7 @@ function STMPerformanceTester:average()
 end
 
 function STMPerformanceTester:schedule_self(event)
-	local event = self.create_event(event, self.id, self.events.TEST)
+	event = self.create_event(event, self.id, self.events.TEST)
 	self.scheduler:add_event(event)
 end
 

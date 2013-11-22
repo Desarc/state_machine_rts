@@ -1,6 +1,3 @@
-local DESKTOP_TIMEOUT = 10e10
-local CONTROLLER_TIMEOUT = 300000*Timer.BASE
-
 Scheduler = {}
 
 Scheduler.type = {
@@ -84,10 +81,8 @@ function Scheduler:new(system_type)
 	o.timer_queue = {}
 	if system_type == self.type.DESKTOP then
 		o.time = desktop_time
-		o.timeout = DESKTOP_TIMEOUT
 	elseif system_type == self.type.CONTROLLER then
 		o.time = controller_time
-		o.timeout = CONTROLLER_TIMEOUT
 	end
 	return o
 end
@@ -95,14 +90,9 @@ end
 function Scheduler:run()
 	print("Scheduler running.")
 	local success, status, state_machine
-	local start = self.time()
 
 	while(true) do	
 		local timer, event
-		if start+self.timeout < self.time() then -- terminate after a timeout
-			print("Ran for 60 sec, terminating...")
-			break
-		end
 		
 		if self:check_timers() then
 			timer = self:get_next_timeout()
