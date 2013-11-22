@@ -1,5 +1,5 @@
 local DESKTOP_TIMEOUT = 10e10
-local CONTROLLER_TIMEOUT = 30000000
+local CONTROLLER_TIMEOUT = 300000*Timer.BASE
 
 Scheduler = {}
 
@@ -41,14 +41,6 @@ end
 
 function Scheduler:get_next_event()
 	return table.remove(self.event_queue, 1)
-end
-
-function Scheduler:event_queue_length()
-	return table.getn(self.event_queue)
-end
-
-function Scheduler:timer_queue_length()
-	return table.getn(self.timer_queue)
 end
 
 local function timers_cmp(t1, t2)

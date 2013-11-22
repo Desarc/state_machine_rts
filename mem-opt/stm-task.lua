@@ -17,9 +17,10 @@ STMSimpleTask.events = {
 }
 
 function STMSimpleTask:schedule_self(timer_no, event, timer)
-	event = self:create_event(event, self.id, self.events.RUN_TASK)
-	timer = self:set_timer(timer, self.id..timer_no, EVENT_INTERVAL, event)
+	event = self.create_event(event, self.id, self.events.RUN_TASK)
+	timer = self.create_timer(timer, self.id..timer_no, EVENT_INTERVAL, event)
 	event.timer = timer
+	self.scheduler:add_timer(timer)
 end
 
 function STMSimpleTask:new(id, scheduler)

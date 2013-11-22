@@ -3,7 +3,7 @@ Timer = {
 }
 
 function Timer:renew(expires)
-	self.data.expires = self.time()+expires
+	self.expires = self.time()+expires
 end
 
 function Timer.time()

@@ -13,7 +13,6 @@ STMTcpServer.events = {
 
 function STMTcpServer:connect()
 	local server = assert(Socket.bind("192.168.100.20", 50000))
-	--local server = assert(Socket.bind("127.0.0.1", 50000))
 	local ip, port = server:getsockname()
 	print("Host IP: "..tostring(ip)..", port: "..tostring(port))
 	self.client = server:accept()

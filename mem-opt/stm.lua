@@ -10,26 +10,25 @@ function StateMachine:fire()
 	error("'fire' function not yet implemented for this state machine!")
 end
 
-function StateMachine:create_event(event, id, type, data)
+function StateMachine.create_event(event, id, type, data)
 	if event then
-		event:set_id(id)
-		event:set_type(type)
-		event:set_data(data)
+		event.id = id
+		event.type = type
+		event.data = data
 	else
 		event = Event:new(id, type, data)
 	end
 	return event
 end
 
-function StateMachine:set_timer(timer, id, expires, event)
+function StateMachine.create_timer(timer, id, expires, event)
 	if timer then
-		timer:set_id(id)
+		timer.id = id
 		timer:renew(expires)
-		timer:set_event(event)
+		timer.event = event
 	else
 		timer = Timer:new(id, expires, event)
 	end
-	self.scheduler:add_timer(timer)
 	return timer
 end
 

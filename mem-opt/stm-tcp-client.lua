@@ -53,7 +53,7 @@ function STMTcpClient:send_request(request)
 end
 
 function STMTcpClient:schedule_receive(event)
-	event = self:generate_event(event, self.id, self.events.RECEIVE)
+	event = self.create_event(event, self.id, self.events.RECEIVE)
 	self.scheduler:add_event(event)
 end
 

@@ -17,15 +17,17 @@ STMMemoryLogger.events = {
 }
 
 function STMMemoryLogger:schedule_measure(timer_no, event, timer)
-	event = self:create_event(event, self.id, self.events.MEASURE)
-	timer = self:set_timer(timer, self.id..timer_no, MEASURE_INTERVAL, event)
+	event = self.create_event(event, self.id, self.events.MEASURE)
+	timer = self.create_timer(timer, self.id..timer_no, MEASURE_INTERVAL, event)
 	event.timer = timer
+	self.scheduler:add_timer(timer)
 end
 
 function STMMemoryLogger:schedule_send(timer_no, event, timer)
-	event = self:create_event(event, self.id, self.events.SEND_DATA)
-	timer = self:set_timer(timer, self.id..timer_no, SEND_INTERVAL, event)
+	event = self.create_event(event, self.id, self.events.SEND_DATA)
+	timer = self.create_timer(timer, self.id..timer_no, SEND_INTERVAL, event)
 	event.timer = timer
+	self.scheduler:add_timer(timer)
 end
 
 function STMMemoryLogger:measure()
@@ -35,7 +37,7 @@ end
 
 function STMMemoryLogger:send_data(event)
 	local message = Message:new({stm_id = ASSOCIATE_ID, event_type = ASSOCIATE_EVENT, user_data = table.concat(self.measurements, " ")})
-	local event = self:create_event(event, CONN_ID, CONN_EVENT, message)
+	local event = self.create_event(event, CONN_ID, CONN_EVENT, message)
 	self.scheduler:add_event(event)
 	for i in ipairs(self.measurements) do
 		self.measurements[i] = nil
@@ -70,7 +72,7 @@ function STMMemoryLogger:fire()
 			end
 		
 		elseif self.state == ACTIVE then
-			if event.type() == self.events.MEASURE then
+			if event.type == self.events.MEASURE then
 				self:measure()
 				self:schedule_measure(T1, event, event.timer)
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
