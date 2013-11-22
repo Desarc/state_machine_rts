@@ -101,7 +101,7 @@ end
 
 function Scheduler:run()
 	print("Scheduler running.")
-	local success, status, state_machine
+	local result, status, state_machine
 	local start = self.time()
 
 	while(true) do	
@@ -114,8 +114,8 @@ function Scheduler:run()
 		if self:check_timers() then
 			timer = self:get_next_timeout()
 			state_machine = self.state_machine_list[timer.event.state_machine_id]
-			result, status = state_machine:fire(event)
-			if not success then
+			result, status = state_machine:fire(timer.event)
+			if not result then
 				print("Transition failed, status: "..status)
 				self:remove_state_machine(state_machine.id)
 				break

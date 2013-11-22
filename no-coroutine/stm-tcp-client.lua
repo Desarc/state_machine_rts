@@ -53,7 +53,7 @@ function STMTcpClient:send_request(request)
 end
 
 function STMTcpClient:schedule_receive(event)
-	event = self:generate_event(event, self.id, self.events.RECEIVE)
+	event = self.create_event(event, self.id, self.events.RECEIVE)
 	self.scheduler:add_event(event)
 end
 
@@ -85,7 +85,7 @@ function STMTcpClient:fire(event)
 
 			if event.type == self.events.SEND then
 				self:send_request(event.data)
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				return true, StateMachine.EXECUTE_TRANSITION
 
 			elseif event.type == self.events.DISCONNECT then
 				self:disconnect()
