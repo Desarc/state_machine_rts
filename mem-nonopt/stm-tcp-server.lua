@@ -96,7 +96,7 @@ function STMTcpServer:fire()
 			elseif event:type() == self.events.DISCONNECT then
 				self:disconnect()
 				self:set_state(DISCONNECTED)
-				coroutine.yield(StateMachine.TERMINATE_SYSTEM)
+				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)			

@@ -71,9 +71,8 @@ function STMTcpServer:new(id, scheduler)
 	return o
 end
 
-function STMTcpServer:fire()
+function STMTcpServer:fire(event)
 	while(true) do
-		local event = self.scheduler.active_event
 
 		if self.state == DISCONNECTED then
 			
@@ -81,10 +80,10 @@ function STMTcpServer:fire()
 				self:connect()
 				self:schedule_receive(event)
 				self.state = CONNECTED
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				return true, StateMachine.EXECUTE_TRANSITION
 
 			else
-				coroutine.yield(StateMachine.DISCARD_EVENT)		
+				return true, StateMachine.DISCARD_EVENT	
 			end
 		
 		elseif self.state == CONNECTED then
@@ -92,19 +91,19 @@ function STMTcpServer:fire()
 			if event.type == self.events.RECEIVE then
 				self:receive_request()
 				self:schedule_receive(event)
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				return true, StateMachine.EXECUTE_TRANSITION
 
 			elseif event.type == self.events.DISCONNECT then
 				self:disconnect()
 				self.state = DISCONNECTED
-				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
+				return true, StateMachine.EXECUTE_TRANSITION
 
 			else
-				coroutine.yield(StateMachine.DISCARD_EVENT)			
+				return true, StateMachine.DISCARD_EVENT		
 			end
 
 		else
-			coroutine.yield(StateMachine.DISCARD_EVENT)
+			return true, StateMachine.DISCARD_EVENT
 		end
 	end
 end
