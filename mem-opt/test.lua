@@ -46,7 +46,7 @@ for i=1,run_time do
 		measurements[count] = mem
 		count = count + 1
 	end
-	send_data(table.concat(measurements, " ")
+	send_data(table.concat(measurements, " "))
 	for i in ipairs(measurements) do
 		measurements[i] = nil
 	end

@@ -1,7 +1,7 @@
 figure('Name', 'dynamic_memory_use_first')
 hold off
 file1 = fopen('mem_stm_nonopt.txt', 'r');
-file2 = fopen('mem_nostm.txt', 'r');
+file2 = fopen('mem_nostm_nonopt.txt', 'r');
 data1 = fscanf(file1, '%f');
 data2 = fscanf(file2, '%f');
 
@@ -19,7 +19,6 @@ line([0 length(t)*dt], [68, 68], 'Color', 'm')
 
 fclose(file1);
 fclose(file2);
-fclose(file5);
 
 % values: task_size: 500, no_measurements = 10, task_repeats = 20, run_time
 % = 300000ms
