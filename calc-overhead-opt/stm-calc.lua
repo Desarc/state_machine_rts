@@ -2,8 +2,8 @@ STMPerformanceTester = StateMachine:new()
 
 local IDLE, TESTING  = 1, 2
 local task_sizes = {10, 50, 100, 500, 1000, 5000, 10000, 50000}
-local task_repeats = {1, 50, 100, 500}
---local task_repeats = {1}
+--local task_repeats = {1, 50, 100, 500}
+local task_repeats = {1, 50}
 local runs = 10
 
 local current_size = task_sizes[1]
@@ -60,8 +60,8 @@ function STMPerformanceTester:fire()
 		if self.state == IDLE then
 			if event.type == self.events.START then
 				print("Running performance tests...")
-				self:schedule_self(event)
 				self.start = self.scheduler.time()
+				self:schedule_self(event)
 				self.state = TESTING
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
@@ -83,8 +83,8 @@ function STMPerformanceTester:fire()
 					self.run_count = self.run_count + 1
 					if self.run_count < runs then
 						self.repeat_count = 0
-						self:schedule_self(event)
 						self.start = self.scheduler.time()
+						self:schedule_self(event)
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 					elseif self.total_count < table.getn(task_sizes)*table.getn(task_repeats) then
@@ -106,8 +106,8 @@ function STMPerformanceTester:fire()
 						current_repeats = task_repeats[self.current_repeats_count]
 						self.run_count = 0
 						self.total_count = self.total_count + 1
-						self:schedule_self(event)
 						self.start = self.scheduler.time()
+						self:schedule_self(event)
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 					else
