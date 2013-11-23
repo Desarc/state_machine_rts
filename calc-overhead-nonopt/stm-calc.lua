@@ -45,9 +45,6 @@ function STMPerformanceTester:new(id, scheduler)
 	o.scheduler = function ()
 		return sched
 	end
-
-	scheduler.add_state_machine(o)
-	return o
 	
 	o.current_size_count = 1
 	o.current_repeats_count = 1

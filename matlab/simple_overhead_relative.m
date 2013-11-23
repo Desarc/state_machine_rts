@@ -1,4 +1,4 @@
-figure('Name', 'simple_overhead_rel')
+figure('Name', 'performance_overhead_rel')
 hold off
 dt = 0.01;
 x = [10, 50, 100, 500, 1000, 5000, 10000, 50000]*dt;
