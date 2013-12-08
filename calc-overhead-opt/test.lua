@@ -1,5 +1,6 @@
 local task_sizes = {10, 50, 100, 500, 1000, 5000, 10000, 50000}
-local task_repeats = {1, 50, 100, 500}
+--local task_repeats = {1, 50, 100, 500}
+local task_repeats = {1, 50}
 local measurements = 10
 
 local deltas = {}

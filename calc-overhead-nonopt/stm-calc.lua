@@ -126,6 +126,7 @@ function STMPerformanceTester:fire()
 						current_size = task_sizes[self.current_size_count]
 						current_repeats = task_repeats[self.current_repeats_count]
 						self.run_count = 0
+						self.repeat_count = 0
 						self.total_count = self.total_count + 1
 						self.start = self.scheduler().time()
 						self:schedule_self()
