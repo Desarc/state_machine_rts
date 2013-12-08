@@ -1,12 +1,9 @@
-local StateMachine = require "stm"
-local Event = require "event"
-
-local STMPerformanceTester = StateMachine:new()
+STMPerformanceTester = StateMachine:new()
 
 local IDLE, TESTING  = 1, 2
 local task_sizes = {10, 50, 100, 500, 1000, 5000, 10000, 50000}
+--local task_repeats = {1, 50, 100, 500}
 local task_repeats = {1, 50, 100}
---local task_repeats = {1}
 local runs = 10
 
 local current_size = task_sizes[1]
@@ -27,33 +24,16 @@ STMPerformanceTester.events = {
 function STMPerformanceTester:new(id, scheduler)
 	local o = {}
 	setmetatable(o, { __index = self })
-	local data = {id = id, state = IDLE}
-	local sched = scheduler
-
-	o.id = function ()
-		return data.id
-	end
-
-	o.state = function ()
-		return data.state
-	end
-
-	o.set_state = function (state)
-		data.state = state
-	end
-
-	o.scheduler = function ()
-		return sched
-	end
-	
+	o.id = id
+	o.state = IDLE
+	o.scheduler = scheduler
 	o.current_size_count = 1
 	o.current_repeats_count = 1
 	o.repeat_count = 0
 	o.run_count = 0
 	o.total_count = 0
 	o.time = {}
-
-	scheduler.add_state_machine(o)
+	scheduler:add_state_machine(o)
 	return o
 end
 
@@ -68,49 +48,48 @@ function STMPerformanceTester:average()
 	return average
 end
 
-function STMPerformanceTester:schedule_self()
-	local event = Event:new(self.id(), self.events.TEST)
-	self.scheduler().add_event(event)
+function STMPerformanceTester:schedule_self(event)
+	event = self.create_event(event, self.id, self.events.TEST)
+	self.scheduler:add_event(event)
 end
 
 function STMPerformanceTester:fire()
 	while(true) do
-		local event = self.scheduler().get_active_event()
-		local current_state = self.state()
+		local event = self.scheduler.active_event
 
-		if current_state == IDLE then
-			if event.type() == self.events.START then
+		if self.state == IDLE then
+			if event.type == self.events.START then
 				print("Running performance tests...")
-				self.start = self.scheduler().time()
-				self:schedule_self()
-				self.set_state(TESTING)
+				self.start = self.scheduler.time()
+				self:schedule_self(event)
+				self.state = TESTING
 				coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 			else
 				coroutine.yield(StateMachine.DISCARD_EVENT)
 			end
 
-		elseif current_state == TESTING then
-			if event.type() == self.events.TEST then
+		elseif self.state == TESTING then
+			if event.type == self.events.TEST then
 				if self.repeat_count < current_repeats then
 					simple_task()
 					self.repeat_count = self.repeat_count + 1
-					self:schedule_self()
+					self:schedule_self(event)
 					coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 				else
-					local delta = self.scheduler().time() - self.start
+					local delta = self.scheduler.time() - self.start
 					table.insert(self.time, delta)
 					self.run_count = self.run_count + 1
 					if self.run_count < runs then
 						self.repeat_count = 0
-						self.start = self.scheduler().time()
-						self:schedule_self()
+						self.start = self.scheduler.time()
+						self:schedule_self(event)
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 					elseif self.total_count < table.getn(task_sizes)*table.getn(task_repeats) then
 						print(tostring(current_size).."/"..tostring(current_repeats)..": "..tostring(self:average()))
-						for i in ipairs(self.time) do
+						for i,v in ipairs(self.time) do
 							self.time[i] = nil
 						end
 						if self.current_size_count >= table.getn(task_sizes) then
@@ -128,8 +107,8 @@ function STMPerformanceTester:fire()
 						self.run_count = 0
 						self.repeat_count = 0
 						self.total_count = self.total_count + 1
-						self.start = self.scheduler().time()
-						self:schedule_self()
+						self.start = self.scheduler.time()
+						self:schedule_self(event)
 						coroutine.yield(StateMachine.EXECUTE_TRANSITION)
 
 					else
@@ -144,5 +123,3 @@ function STMPerformanceTester:fire()
 		end
 	end
 end
-
-return STMPerformanceTester

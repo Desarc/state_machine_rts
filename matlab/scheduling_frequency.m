@@ -6,11 +6,11 @@ z = [111, 498, 983, 4838, 9657];
 
 dt2 = 111/235;
 
-y = []*dt2;
+y = [1114, 222, 111, 23, 11]*dt2;
 y = y.*z./100;
 y = y+z;
 y = y./1000000;
 
 semilogx(x, y)
-title('Performance overhead measurements of runtime system')
+title('Maximum scheduling frequency')
 xlabel('task\_size (ms)'), ylabel('Maximum scheduling frequency')
